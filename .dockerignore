@@ -1,0 +1,13 @@
+.git
+.idea
+.vscode
+*.iml
+HELP.md
+
+# So o jar final do target entra no contexto
+target/*
+!target/*.jar
+
+# Credenciais e configuracoes locais nunca entram na imagem
+.env
+.env.*
