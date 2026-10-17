@@ -1,0 +1,893 @@
+
+openapi: 3.0.3
+
+info:
+  title: API Mecânica
+  description: REST API do projeto da Mecânica
+  version: 1.0.0
+
+servers:
+  - url: /mecanica
+
+tags:
+  - name: clienteV1
+    description: Grupo de endpoints v1 para gerenciamento de clientes
+  - name: veiculoV1
+    description: Grupo de endpoints v1 para gerenciamento de veículos
+  - name: pecaV1
+    description: Grupo de endpoints v1 para gerenciamento de peças
+  - name: insumoV1
+    description: Grupo de endpoints v1 para gerenciamento de insumos
+  - name: ordemServicoV1
+    description: Grupo de endpoints v1 para gerenciamento de ordens de serviço
+
+paths:
+  /v1/clientes:
+    get:
+      tags:
+        - clienteV1
+      operationId: listaClientesV1
+      summary: Lista os clientes
+      description: Lista os clientes da mecânica
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponseDTOV1'
+    post:
+      tags:
+        - clienteV1
+      operationId: cadastrarClienteV1
+      summary: Cadastra um cliente
+      description: Cadastra um cliente na mecânica
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClienteRequestDTOV1'
+      responses:
+        '201':
+          description: Cliente cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /v1/clientes/{id}:
+    get:
+      tags:
+        - clienteV1
+      operationId: buscarClienteV1
+      summary: Busca um cliente
+      description: Busca um cliente específico pelo ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ClienteId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - clienteV1
+      operationId: excluirClienteV1
+      summary: Exclui um cliente
+      description: Exclui um cliente específico pelo ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ClienteId'
+      responses:
+        '204':
+          description: Cliente excluído
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/veiculos:
+    get:
+      tags:
+        - veiculoV1
+      operationId: listaVeiculosV1
+      summary: Lista os veículos
+      description: Lista os veículos da mecânica
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VeiculoResponseDTOV1'
+    post:
+      tags:
+        - veiculoV1
+      operationId: cadastrarVeiculoV1
+      summary: Cadastra um veículo
+      description: Cadastra um veículo na mecânica
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VeiculoRequestDTOV1'
+      responses:
+        '201':
+          description: Veículo cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VeiculoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /v1/veiculos/{id}:
+    get:
+      tags:
+        - veiculoV1
+      operationId: buscarVeiculoV1
+      summary: Busca um veículo
+      description: Busca um veículo específico pelo ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/VeiculoId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VeiculoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - veiculoV1
+      operationId: excluirVeiculoV1
+      summary: Exclui um veículo
+      description: Exclui um veículo específico pelo ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/VeiculoId'
+      responses:
+        '204':
+          description: Veículo excluído
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/pecas:
+    get:
+      tags:
+        - pecaV1
+      operationId: listaPecasV1
+      summary: Lista as peças
+      description: Lista as peças da mecânica
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PecaResponseDTOV1'
+    post:
+      tags:
+        - pecaV1
+      operationId: cadastrarPecaV1
+      summary: Cadastra uma peça
+      description: Cadastra uma peça na mecânica
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PecaRequestDTOV1'
+      responses:
+        '201':
+          description: Peça cadastrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PecaResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /v1/pecas/{id}:
+    get:
+      tags:
+        - pecaV1
+      operationId: buscarPecaV1
+      summary: Busca uma peça
+      description: Busca uma peça específica pelo ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/PecaId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PecaResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - pecaV1
+      operationId: excluirPecaV1
+      summary: Exclui uma peça
+      description: Exclui uma peça específica pelo ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/PecaId'
+      responses:
+        '204':
+          description: Peça excluída
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/insumos:
+    get:
+      tags:
+        - insumoV1
+      operationId: listaInsumosV1
+      summary: Lista os insumos
+      description: Lista os insumos da mecânica
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InsumoResponseDTOV1'
+    post:
+      tags:
+        - insumoV1
+      operationId: cadastrarInsumoV1
+      summary: Cadastra um insumo
+      description: Cadastra um insumo na mecânica
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsumoRequestDTOV1'
+      responses:
+        '201':
+          description: Insumo cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsumoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /v1/insumos/{id}:
+    get:
+      tags:
+        - insumoV1
+      operationId: buscarInsumoV1
+      summary: Busca um insumo
+      description: Busca um insumo específico pelo ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/InsumoId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsumoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - insumoV1
+      operationId: excluirInsumoV1
+      summary: Exclui um insumo
+      description: Exclui um insumo específico pelo ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/InsumoId'
+      responses:
+        '204':
+          description: Insumo excluído
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/ordem-servico:
+    get:
+      tags:
+        - ordemServicoV1
+      operationId: listaOrdensServicoV1
+      summary: Lista as ordens de serviço
+      description: Lista as ordens de serviço da mecânica
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ClienteIdQuery'
+        - $ref: '#/components/parameters/VeiculoIdQuery'
+        - $ref: '#/components/parameters/OrdemServicoStatusQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+    post:
+      tags:
+        - ordemServicoV1
+      operationId: cadastrarOrdemServicoV1
+      summary: Cadastra uma ordem de serviço
+      description: Cadastra uma ordem de serviço na mecânica
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrdemServicoRequestDTOV1'
+      responses:
+        '201':
+          description: Ordem de serviço cadastrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /v1/ordem-servico/{id}:
+    get:
+      tags:
+        - ordemServicoV1
+      operationId: buscarOrdemServicoV1
+      summary: Busca uma ordem de serviço
+      description: Busca uma ordem de serviço específica pelo ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - ordemServicoV1
+      operationId: atualizarOrdemServicoV1
+      summary: Atualiza uma ordem de serviço
+      description: Atualiza parcialmente uma ordem de serviço
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrdemServicoPatchRequestDTOV1'
+      responses:
+        '200':
+          description: Ordem de serviço atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/ordem-servico/{id}/cancelamento:
+    post:
+      tags:
+        - ordemServicoV1
+      operationId: cancelarOrdemServicoV1
+      summary: Cancela uma ordem de serviço
+      description: Cancela uma ordem de serviço sem remover seu histórico
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      responses:
+        '200':
+          description: Ordem de serviço cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    ClienteId:
+      name: id
+      in: path
+      required: true
+      description: ID do cliente
+      schema:
+        type: integer
+        format: int32
+    VeiculoId:
+      name: id
+      in: path
+      required: true
+      description: ID do veículo
+      schema:
+        type: integer
+        format: int32
+    PecaId:
+      name: id
+      in: path
+      required: true
+      description: ID da peça
+      schema:
+        type: integer
+        format: int32
+    InsumoId:
+      name: id
+      in: path
+      required: true
+      description: ID do insumo
+      schema:
+        type: integer
+        format: int32
+    OrdemServicoId:
+      name: id
+      in: path
+      required: true
+      description: ID da ordem de serviço
+      schema:
+        type: integer
+        format: int32
+    ClienteIdQuery:
+      name: clienteId
+      in: query
+      required: false
+      description: Filtra pelo ID do cliente
+      schema:
+        type: integer
+        format: int32
+    VeiculoIdQuery:
+      name: veiculoId
+      in: query
+      required: false
+      description: Filtra pelo ID do veículo
+      schema:
+        type: integer
+        format: int32
+    OrdemServicoStatusQuery:
+      name: status
+      in: query
+      required: false
+      description: Filtra pelo status da ordem de serviço
+      schema:
+        type: string
+  schemas:
+    ClienteRequestDTOV1:
+      type: object
+      required:
+        - nome
+        - celular
+        - email
+        - cpf
+      properties:
+        nome:
+          type: string
+          description: Nome do cliente
+        celular:
+          type: string
+          description: Celular do cliente
+        email:
+          type: string
+          format: email
+          description: E-mail do cliente
+        cpf:
+          type: string
+          description: CPF do cliente
+    ClienteResponseDTOV1:
+      type: object
+      required:
+        - id
+        - nome
+        - celular
+        - email
+        - cpf
+      properties:
+        id:
+          type: integer
+          description: ID do cliente
+        nome:
+          type: string
+          description: Nome do cliente
+        celular:
+          type: string
+          description: Celular do cliente
+        email:
+          type: string
+          description: E-mail do cliente
+        cpf:
+          type: string
+          description: CPF do cliente
+    VeiculoRequestDTOV1:
+      type: object
+      required:
+        - placa
+        - modelo
+        - clienteId
+      properties:
+        placa:
+          type: string
+          description: Placa do veículo
+        modelo:
+          type: string
+          description: Modelo do veículo
+        marca:
+          type: string
+          description: Marca do veículo
+        ano:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Ano do veículo
+        clienteId:
+          type: integer
+          format: int32
+          description: ID do cliente proprietário
+    VeiculoResponseDTOV1:
+      type: object
+      required:
+        - id
+        - placa
+        - modelo
+        - clienteId
+      properties:
+        id:
+          type: integer
+          description: ID do veículo
+        placa:
+          type: string
+          description: Placa do veículo
+        modelo:
+          type: string
+          description: Modelo do veículo
+        marca:
+          type: string
+          description: Marca do veículo
+        ano:
+          type: integer
+          format: int32
+          description: Ano do veículo
+        clienteId:
+          type: integer
+          description: ID do cliente proprietário
+    PecaRequestDTOV1:
+      type: object
+      required:
+        - quantidadeEstoque
+        - valor
+        - nome
+      properties:
+        quantidadeEstoque:
+          type: integer
+          format: int32
+          description: Quantidade da peça em estoque
+        valor:
+          type: number
+          format: double
+          description: Valor da peça
+        nome:
+          type: string
+          description: Nome da peça
+        descricao:
+          type: string
+          description: Descrição da peça
+        fabricante:
+          type: string
+          description: Fabricante da peça
+    PecaResponseDTOV1:
+      type: object
+      required:
+        - id
+        - quantidadeEstoque
+        - valor
+        - nome
+      properties:
+        id:
+          type: integer
+          description: ID da peça
+        quantidadeEstoque:
+          type: integer
+          format: int32
+          description: Quantidade da peça em estoque
+        valor:
+          type: number
+          format: double
+          description: Valor da peça
+        nome:
+          type: string
+          description: Nome da peça
+        descricao:
+          type: string
+          description: Descrição da peça
+        fabricante:
+          type: string
+          description: Fabricante da peça
+    InsumoRequestDTOV1:
+      type: object
+      required:
+        - quantidadeEstoque
+        - valor
+        - nome
+        - unidadeMedida
+      properties:
+        quantidadeEstoque:
+          type: integer
+          format: int32
+          description: Quantidade do insumo em estoque
+        valor:
+          type: number
+          format: double
+          description: Valor do insumo
+        nome:
+          type: string
+          description: Nome do insumo
+        descricao:
+          type: string
+          description: Descrição do insumo
+        unidadeMedida:
+          type: string
+          description: Unidade de medida do insumo
+    InsumoResponseDTOV1:
+      type: object
+      required:
+        - id
+        - quantidadeEstoque
+        - valor
+        - nome
+        - unidadeMedida
+      properties:
+        id:
+          type: integer
+          description: ID do insumo
+        quantidadeEstoque:
+          type: integer
+          format: int32
+          description: Quantidade do insumo em estoque
+        valor:
+          type: number
+          format: double
+          description: Valor do insumo
+        nome:
+          type: string
+          description: Nome do insumo
+        descricao:
+          type: string
+          description: Descrição do insumo
+        unidadeMedida:
+          type: string
+          description: Unidade de medida do insumo
+    OrdemServicoRequestDTOV1:
+      type: object
+      required:
+        - clienteId
+        - veiculoId
+      properties:
+        clienteId:
+          type: integer
+          format: int32
+          description: ID do cliente
+        veiculoId:
+          type: integer
+          format: int32
+          description: ID do veículo
+        descricao:
+          type: string
+          description: Descrição da solicitação do cliente
+        servicoIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: IDs dos serviços associados
+        produtoIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: IDs das peças ou insumos associados
+    OrdemServicoPatchRequestDTOV1:
+      type: object
+      properties:
+        diagnostico:
+          type: string
+          description: Diagnóstico realizado
+        status:
+          type: string
+          description: Status atual da ordem de serviço
+        dataFechamento:
+          type: string
+          format: date-time
+          description: Data de fechamento da ordem
+        orcamentoId:
+          type: integer
+          format: int32
+          description: ID do orçamento associado
+        servicoIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: IDs dos serviços associados
+        produtoIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: IDs das peças ou insumos associados
+        valorTotal:
+          type: number
+          format: double
+          description: Valor total da ordem de serviço
+    OrdemServicoResponseDTOV1:
+      type: object
+      required:
+        - id
+        - clienteId
+        - veiculoId
+        - servicoIds
+        - produtoIds
+        - dataAbertura
+        - status
+        - valorTotal
+      properties:
+        id:
+          type: integer
+          description: ID da ordem de serviço
+        clienteId:
+          type: integer
+          description: ID do cliente
+        veiculoId:
+          type: integer
+          description: ID do veículo
+        orcamentoId:
+          type: integer
+          description: ID do orçamento associado
+        servicoIds:
+          type: array
+          items:
+            type: integer
+          description: IDs dos serviços associados
+        produtoIds:
+          type: array
+          items:
+            type: integer
+          description: IDs das peças ou insumos associados
+        dataAbertura:
+          type: string
+          format: date-time
+          description: Data de abertura da ordem
+        dataFechamento:
+          type: string
+          format: date-time
+          description: Data de fechamento da ordem
+        status:
+          type: string
+          description: Status atual da ordem de serviço
+        descricao:
+          type: string
+          description: Descrição da solicitação do cliente
+        diagnostico:
+          type: string
+          description: Diagnóstico realizado
+        valorTotal:
+          type: number
+          format: double
+          description: Valor total da ordem de serviço
+    ErrorResponseDTOV1:
+      type: object
+      required:
+        - status
+        - timestamp
+        - type
+        - title
+        - detail
+        - userMessage
+      properties:
+        status:
+          type: integer
+          description: Código HTTP do erro
+        timestamp:
+          type: string
+          format: date-time
+          description: Data e hora em que o erro ocorreu
+          example: '2026-01-01T23:59:00.0000000Z'
+        type:
+          type: string
+          description: Tipo do erro
+          example: /erro-de-sistema
+        title:
+          type: string
+          description: Título do erro
+        detail:
+          type: string
+          description: Detalhe técnico do erro
+        userMessage:
+          type: string
+          description: Mensagem de erro para o usuário
+        objects:
+          type: array
+          description: Campos que podem ter gerado o erro
+          items:
+            $ref: '#/components/schemas/ErrorObjectDTOV1'
+    ErrorObjectDTOV1:
+      type: object
+      required:
+        - name
+        - userMessage
+      properties:
+        name:
+          type: string
+          description: Nome do campo que gerou o erro
+        userMessage:
+          type: string
+          description: Mensagem de erro do campo
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseDTOV1'
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseDTOV1'
