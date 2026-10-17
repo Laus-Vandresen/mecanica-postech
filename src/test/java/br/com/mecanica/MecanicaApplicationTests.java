@@ -27,7 +27,7 @@ class MecanicaApplicationTests {
     @Test
     void contextLoadsWithFlyway() {
         assertNotNull(flyway.info());
-        assertEquals("1", flyway.info().current().getVersion().getVersion());
+        assertEquals(0, flyway.info().pending().length);
     }
 
     @Test

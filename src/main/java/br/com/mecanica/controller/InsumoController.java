@@ -3,6 +3,9 @@ package br.com.mecanica.controller;
 import br.com.mecanica.api.InsumoV1Api;
 import br.com.mecanica.api.dto.InsumoRequestDTOV1;
 import br.com.mecanica.api.dto.InsumoResponseDTOV1;
+import br.com.mecanica.controller.mapper.InsumoMapper;
+import br.com.mecanica.service.InsumoService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,25 +13,30 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 public class InsumoController implements InsumoV1Api {
+
+    private final InsumoService service;
 
     @Override
     public ResponseEntity<InsumoResponseDTOV1> cadastrarInsumoV1(InsumoRequestDTOV1 insumoRequestDTOV1) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(new InsumoResponseDTOV1());
+        var response = InsumoMapper.toResponse(service.criar(InsumoMapper.toDomain(insumoRequestDTOV1)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Override
     public ResponseEntity<InsumoResponseDTOV1> buscarInsumoV1(Integer id) {
-        return ResponseEntity.ok(new InsumoResponseDTOV1());
+        return ResponseEntity.ok(InsumoMapper.toResponse(service.buscar(id.longValue())));
     }
 
     @Override
     public ResponseEntity<Void> excluirInsumoV1(Integer id) {
+        service.excluir(id.longValue());
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<List<InsumoResponseDTOV1>> listaInsumosV1() {
-        return ResponseEntity.ok(List.of());
+        return ResponseEntity.ok(InsumoMapper.toResponse(service.listar()));
     }
 }

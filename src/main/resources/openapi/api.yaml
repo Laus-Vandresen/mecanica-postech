@@ -36,7 +36,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ClienteResponseDTOV1'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClienteResponseDTOV1'
     post:
       tags:
         - clienteV1
@@ -112,7 +114,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VeiculoResponseDTOV1'
+                type: array
+                items:
+                  $ref: '#/components/schemas/VeiculoResponseDTOV1'
     post:
       tags:
         - veiculoV1
