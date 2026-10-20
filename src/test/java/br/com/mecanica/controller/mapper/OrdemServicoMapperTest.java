@@ -1,5 +1,6 @@
 package br.com.mecanica.controller.mapper;
 
+import java.util.UUID;
 import br.com.mecanica.api.dto.OrdemServicoPatchRequestDTOV1;
 import br.com.mecanica.api.dto.OrdemServicoRequestDTOV1;
 import br.com.mecanica.domain.entity.OrdemServico;
@@ -21,15 +22,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class OrdemServicoMapperTest {
 
     @Test
-    void requestParaDominioConverteIdsParaLong() {
-        var request = new OrdemServicoRequestDTOV1(1, 2)
-                .descricao("Barulho").servicoIds(List.of(3, 4)).produtoIds(List.of(5));
+    void requestParaDominioPreservaUUIDs() {
+        var request = new OrdemServicoRequestDTOV1(uuid(1), uuid(2))
+                .descricao("Barulho").servicoIds(List.of(uuid(3), uuid(4))).produtoIds(List.of(uuid(5)));
         var ordem = OrdemServicoMapper.toDomain(request);
         assertNull(ordem.getId());
-        assertEquals(1L, ordem.getClienteId());
-        assertEquals(2L, ordem.getVeiculoId());
-        assertEquals(List.of(3L, 4L), ordem.getServicoIds());
-        assertEquals(List.of(5L), ordem.getProdutoIds());
+        assertEquals(uuid(1), ordem.getClienteId());
+        assertEquals(uuid(2), ordem.getVeiculoId());
+        assertEquals(List.of(uuid(3), uuid(4)), ordem.getServicoIds());
+        assertEquals(List.of(uuid(5)), ordem.getProdutoIds());
         assertEquals("Barulho", ordem.getDescricao());
     }
 
@@ -47,15 +48,15 @@ class OrdemServicoMapperTest {
     @Test
     void entityParaResponseExtraiIdsDasRelacoes() {
         var entity = new OrdemServicoEntity();
-        entity.setId(9L);
+        entity.setId(uuid(9));
         var cliente = new ClienteEntity();
-        cliente.setId(1L);
+        cliente.setId(uuid(1));
         var veiculo = new VeiculoEntity();
-        veiculo.setId(2L);
+        veiculo.setId(uuid(2));
         var servico = new ServicoEntity();
-        servico.setId(3L);
+        servico.setId(uuid(3));
         var produto = new ProdutoEntity();
-        produto.setId(5L);
+        produto.setId(uuid(5));
         entity.setCliente(cliente);
         entity.setVeiculo(veiculo);
         entity.setServicos(List.of(servico));
@@ -65,12 +66,12 @@ class OrdemServicoMapperTest {
         entity.setValorTotal(new BigDecimal("10.50"));
 
         var response = OrdemServicoMapper.toResponse(OrdemServicoEntityMapper.toDomain(entity));
-        assertEquals(9, response.getId());
-        assertEquals(1, response.getClienteId());
-        assertEquals(2, response.getVeiculoId());
+        assertEquals(uuid(9), response.getId());
+        assertEquals(uuid(1), response.getClienteId());
+        assertEquals(uuid(2), response.getVeiculoId());
         assertNull(response.getOrcamentoId());
-        assertEquals(List.of(3), response.getServicoIds());
-        assertEquals(List.of(5), response.getProdutoIds());
+        assertEquals(List.of(uuid(3)), response.getServicoIds());
+        assertEquals(List.of(uuid(5)), response.getProdutoIds());
         assertEquals(LocalDateTime.of(2026, 1, 2, 3, 4), response.getDataAbertura().toLocalDateTime());
         assertEquals(10.5, response.getValorTotal());
     }
@@ -78,12 +79,15 @@ class OrdemServicoMapperTest {
     @Test
     void dominioParaEntityNaoPreencheRelacoes() {
         var ordem = new OrdemServico();
-        ordem.setClienteId(1L);
-        ordem.setServicoIds(List.of(3L));
+        ordem.setClienteId(uuid(1));
+        ordem.setServicoIds(List.of(uuid(3)));
         ordem.setDescricao("x");
         var entity = OrdemServicoEntityMapper.toEntity(ordem);
         assertNull(entity.getCliente());
         assertNull(entity.getServicos());
         assertEquals("x", entity.getDescricao());
+    }
+    private static UUID uuid(long value) {
+        return new UUID(0L, value);
     }
 }

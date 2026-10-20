@@ -13,7 +13,9 @@ public final class VeiculoEntityMapper {
     private static final ModelMapper MODEL_MAPPER = ModelMapperConfig.getModelMapper();
 
     public static Veiculo toDomain(VeiculoEntity entity) {
-        return MODEL_MAPPER.map(entity, Veiculo.class);
+        var veiculo = MODEL_MAPPER.map(entity, Veiculo.class);
+        veiculo.setClienteId(entity.getCliente() == null ? null : entity.getCliente().getId());
+        return veiculo;
     }
 
     public static VeiculoEntity toEntity(Veiculo veiculo) {

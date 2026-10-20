@@ -1,5 +1,6 @@
 package br.com.mecanica.service;
 
+import java.util.UUID;
 import br.com.mecanica.entity.mapper.PecaEntityMapper;
 import br.com.mecanica.domain.entity.Peca;
 import br.com.mecanica.entity.PecaEntity;
@@ -21,7 +22,7 @@ public class PecaService {
         return repository.findAll(Sort.by("id")).stream().map(PecaEntityMapper::toDomain).toList();
     }
 
-    public Peca buscar(Long id) {
+    public Peca buscar(UUID id) {
         return PecaEntityMapper.toDomain(encontrar(id));
     }
 
@@ -31,19 +32,19 @@ public class PecaService {
     }
 
     @Transactional
-    public Peca atualizar(Long id, Peca peca) {
+    public Peca atualizar(UUID id, Peca peca) {
         var entity = encontrar(id);
         PecaEntityMapper.updateEntity(peca, entity);
         return PecaEntityMapper.toDomain(repository.saveAndFlush(entity));
     }
 
     @Transactional
-    public void excluir(Long id) {
+    public void excluir(UUID id) {
         repository.delete(encontrar(id));
         repository.flush();
     }
 
-    private PecaEntity encontrar(Long id) {
+    private PecaEntity encontrar(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Peca nao encontrado"));
     }

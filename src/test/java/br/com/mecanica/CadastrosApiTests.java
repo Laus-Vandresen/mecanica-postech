@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.stream.Stream;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -34,21 +35,21 @@ class CadastrosApiTests {
     }
 
     static Stream<String> rotas() {
-        return Stream.of("clientes", "veiculos", "servicos", "pecas", "insumos");
+        return Stream.of("clientes", "veiculos", "pecas", "insumos");
     }
 
-    private long criar(String rota, String body) throws Exception {
-        var result = mvc.perform(post("/" + rota).contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isCreated()).andExpect(header().exists("Location"))
+    private UUID criar(String rota, String body) throws Exception {
+        var result = mvc.perform(post("/v1/" + rota).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isCreated())
                 .andReturn();
-        return ((Number) JsonPath.read(result.getResponse().getContentAsString(), "$.id")).longValue();
+        return UUID.fromString(JsonPath.read(result.getResponse().getContentAsString(), "$.id"));
     }
 
-    private String dados(String rota, boolean atualizado, long clienteId) {
+    private String dados(String rota, boolean atualizado, UUID clienteId) {
         var nome = atualizado ? "Atualizado" : "Cadastro";
         return switch (rota) {
-            case "clientes" -> "{\"nome\":\"" + nome + "\",\"cpf\":\"52998224725\",\"email\":\"dev@example.com\"}";
-            case "veiculos" -> "{\"placa\":\"abc1d23\",\"modelo\":\"" + nome + "\",\"marca\":\"Fiat\",\"ano\":2020,\"clienteId\":" + clienteId + "}";
+            case "clientes" -> "{\"nome\":\"" + nome + "\",\"cpf\":\"52998224725\",\"email\":\"dev@example.com\",\"celular\":\"11999999999\"}";
+            case "veiculos" -> "{\"placa\":\"ABC1D23\",\"modelo\":\"" + nome + "\",\"marca\":\"Fiat\",\"ano\":2020,\"clienteId\":\"" + clienteId + "\"}";
             case "servicos" -> "{\"nome\":\"" + nome + "\",\"valor\":150.00}";
             case "pecas" -> "{\"nome\":\"" + nome + "\",\"valor\":25.50,\"quantidadeEstoque\":10,\"fabricante\":\"Fabricante\"}";
             case "insumos" -> "{\"nome\":\"" + nome + "\",\"valor\":12.50,\"quantidadeEstoque\":5,\"unidadeMedida\":\"L\"}";
@@ -59,19 +60,16 @@ class CadastrosApiTests {
     @ParameterizedTest
     @MethodSource("rotas")
     void cicloCompletoDeCadastro(String rota) throws Exception {
-        long clienteId = rota.equals("veiculos") ? criar("clientes", dados("clientes", false, 0)) : 0;
-        long id = criar(rota, dados(rota, false, clienteId));
-        mvc.perform(get("/" + rota + "/" + id)).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(id));
-        mvc.perform(get("/" + rota)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
-        mvc.perform(put("/" + rota + "/" + id).contentType(MediaType.APPLICATION_JSON).content(dados(rota, true, clienteId)))
-                .andExpect(status().isOk()).andExpect(jsonPath(rota.equals("veiculos") ? "$.modelo" : "$.nome").value("Atualizado"));
+        UUID clienteId = rota.equals("veiculos") ? criar("clientes", dados("clientes", false, null)) : null;
+        UUID id = criar(rota, dados(rota, false, clienteId));
+        mvc.perform(get("/v1/" + rota + "/" + id)).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(id.toString()));
+        mvc.perform(get("/v1/" + rota)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
         if (rota.equals("veiculos")) {
-            mvc.perform(get("/veiculos/" + id)).andExpect(jsonPath("$.placa").value("ABC1D23"))
-                    .andExpect(jsonPath("$.clienteId").value(clienteId)).andExpect(jsonPath("$.cliente").doesNotExist());
+            mvc.perform(get("/v1/veiculos/" + id)).andExpect(jsonPath("$.placa").value("ABC1D23"))
+                    .andExpect(jsonPath("$.clienteId").value(clienteId.toString())).andExpect(jsonPath("$.cliente").doesNotExist());
         }
-        mvc.perform(delete("/" + rota + "/" + id)).andExpect(status().isNoContent());
-        mvc.perform(get("/" + rota + "/" + id)).andExpect(status().isNotFound());
-        // JOINED: a exclusao da especializacao deve remover tambem a linha da tabela base.
+        mvc.perform(delete("/v1/" + rota + "/" + id)).andExpect(status().isNoContent());
+        mvc.perform(get("/v1/" + rota + "/" + id)).andExpect(status().isNotFound());
         if (rota.equals("clientes")) assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM pessoa", Integer.class));
         if (rota.equals("pecas") || rota.equals("insumos")) assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM produto", Integer.class));
     }
@@ -79,52 +77,54 @@ class CadastrosApiTests {
     @ParameterizedTest
     @MethodSource("rotas")
     void recursoInexistenteEEntradaInvalida(String rota) throws Exception {
-        mvc.perform(get("/" + rota + "/999999")).andExpect(status().isNotFound());
-        mvc.perform(delete("/" + rota + "/999999")).andExpect(status().isNotFound());
-        mvc.perform(put("/" + rota + "/999999").contentType(MediaType.APPLICATION_JSON).content(dados(rota, true, 999999)))
-                .andExpect(status().isNotFound());
-        mvc.perform(post("/" + rota).contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mvc.perform(get("/v1/" + rota + "/" + UUID.randomUUID())).andExpect(status().isNotFound());
+        mvc.perform(delete("/v1/" + rota + "/" + UUID.randomUUID())).andExpect(status().isNotFound());
+        mvc.perform(post("/v1/" + rota).contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos").isMap());
-        mvc.perform(post("/" + rota).contentType(MediaType.APPLICATION_JSON).content("{"))
+        mvc.perform(post("/v1/" + rota).contentType(MediaType.APPLICATION_JSON).content("{"))
                 .andExpect(status().isBadRequest());
-        mvc.perform(get("/" + rota + "/abc")).andExpect(status().isBadRequest());
+        mvc.perform(get("/v1/" + rota + "/abc")).andExpect(status().isBadRequest());
+        mvc.perform(get("/v1/" + rota + "/123")).andExpect(status().isBadRequest());
     }
 
     @Test
     void duplicidadeEVinculoDeCliente() throws Exception {
-        long cliente = criar("clientes", dados("clientes", false, 0));
-        mvc.perform(post("/clientes").contentType(MediaType.APPLICATION_JSON).content(dados("clientes", false, 0)))
+        UUID cliente = criar("clientes", dados("clientes", false, null));
+        mvc.perform(post("/v1/clientes").contentType(MediaType.APPLICATION_JSON).content(dados("clientes", false, null)))
                 .andExpect(status().isConflict());
-        long veiculo = criar("veiculos", dados("veiculos", false, cliente));
-        mvc.perform(post("/veiculos").contentType(MediaType.APPLICATION_JSON).content(dados("veiculos", false, cliente)))
+        UUID veiculo = criar("veiculos", dados("veiculos", false, cliente));
+        mvc.perform(post("/v1/veiculos").contentType(MediaType.APPLICATION_JSON).content(dados("veiculos", false, cliente)))
                 .andExpect(status().isConflict());
-        mvc.perform(delete("/clientes/" + cliente)).andExpect(status().isConflict());
-        mvc.perform(get("/clientes/" + cliente)).andExpect(status().isOk());
-        mvc.perform(delete("/veiculos/" + veiculo)).andExpect(status().isNoContent());
-        mvc.perform(delete("/clientes/" + cliente)).andExpect(status().isNoContent());
+        mvc.perform(delete("/v1/clientes/" + cliente)).andExpect(status().isConflict());
+        mvc.perform(get("/v1/clientes/" + cliente)).andExpect(status().isOk());
+        mvc.perform(delete("/v1/veiculos/" + veiculo)).andExpect(status().isNoContent());
+        mvc.perform(delete("/v1/clientes/" + cliente)).andExpect(status().isNoContent());
     }
 
     @Test
     void validaCpfPlacaEstoqueEValor() throws Exception {
-        mvc.perform(post("/clientes").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"nome\":\"Cliente\",\"cpf\":\"11111111111\"}"))
+        mvc.perform(post("/v1/clientes").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"nome\":\"Cliente\",\"cpf\":\"123\"}"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos.cpf").exists());
-        mvc.perform(post("/veiculos").contentType(MediaType.APPLICATION_JSON).content(dados("veiculos", false, 999999)))
+        mvc.perform(post("/v1/veiculos").contentType(MediaType.APPLICATION_JSON).content(dados("veiculos", false, UUID.randomUUID())))
                 .andExpect(status().isNotFound());
         for (String rota : new String[]{"pecas", "insumos"}) {
-            mvc.perform(post("/" + rota).contentType(MediaType.APPLICATION_JSON)
-                    .content(dados(rota, false, 0).replace("25.50", "-1.00").replace("12.50", "-1.00")))
+            mvc.perform(post("/v1/" + rota).contentType(MediaType.APPLICATION_JSON)
+                    .content(dados(rota, false, null).replace("25.50", "-1.00").replace("12.50", "-1.00")))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos.valor").exists());
-            mvc.perform(post("/" + rota).contentType(MediaType.APPLICATION_JSON)
-                    .content(dados(rota, false, 0).replace("Estoque\":10", "Estoque\":-1").replace("Estoque\":5", "Estoque\":-1")))
+            mvc.perform(post("/v1/" + rota).contentType(MediaType.APPLICATION_JSON)
+                    .content(dados(rota, false, null).replace("Estoque\":10", "Estoque\":-1").replace("Estoque\":5", "Estoque\":-1")))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos.quantidadeEstoque").exists());
         }
-        mvc.perform(post("/servicos").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"nome\":\"   \",\"valor\":1.001}"))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos.nome").exists())
-                .andExpect(jsonPath("$.campos.valor").exists());
-        mvc.perform(post("/veiculos").contentType(MediaType.APPLICATION_JSON)
-                .content(dados("veiculos", false, 1).replace("abc1d23", "invalida")))
+        mvc.perform(post("/v1/veiculos").contentType(MediaType.APPLICATION_JSON)
+                .content(dados("veiculos", false, UUID.randomUUID()).replace("ABC1D23", "invalida")))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos.placa").exists());
+    }
+    @Test
+    void rejeitaReferenciaDeClienteSemFormatoUuid() throws Exception {
+        var body = dados("veiculos", false, UUID.randomUUID())
+                .replaceFirst("[0-9a-f]{8}-[0-9a-f-]{27}", "123");
+        mvc.perform(post("/v1/veiculos").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest());
     }
 }

@@ -1,5 +1,6 @@
 package br.com.mecanica.service;
 
+import java.util.UUID;
 import br.com.mecanica.entity.mapper.ClienteEntityMapper;
 import br.com.mecanica.domain.entity.Cliente;
 import br.com.mecanica.entity.ClienteEntity;
@@ -21,7 +22,7 @@ public class ClienteService {
         return repository.findAll(Sort.by("id")).stream().map(ClienteEntityMapper::toDomain).toList();
     }
 
-    public Cliente buscar(Long id) {
+    public Cliente buscar(UUID id) {
         return ClienteEntityMapper.toDomain(encontrar(id));
     }
 
@@ -31,19 +32,19 @@ public class ClienteService {
     }
 
     @Transactional
-    public Cliente atualizar(Long id, Cliente cliente) {
+    public Cliente atualizar(UUID id, Cliente cliente) {
         var entity = encontrar(id);
         ClienteEntityMapper.updateEntity(cliente, entity);
         return ClienteEntityMapper.toDomain(repository.saveAndFlush(entity));
     }
 
     @Transactional
-    public void excluir(Long id) {
+    public void excluir(UUID id) {
         repository.delete(encontrar(id));
         repository.flush();
     }
 
-    private ClienteEntity encontrar(Long id) {
+    private ClienteEntity encontrar(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente nao encontrado"));
     }

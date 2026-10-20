@@ -1,5 +1,6 @@
 package br.com.mecanica.controller;
 
+import java.util.UUID;
 import br.com.mecanica.api.VeiculoV1Api;
 import br.com.mecanica.api.dto.VeiculoRequestDTOV1;
 import br.com.mecanica.api.dto.VeiculoResponseDTOV1;
@@ -25,13 +26,13 @@ public class VeiculoController implements VeiculoV1Api {
     }
 
     @Override
-    public ResponseEntity<VeiculoResponseDTOV1> buscarVeiculoV1(Integer id) {
-        return ResponseEntity.ok(VeiculoMapper.toResponse(service.buscar(id.longValue())));
+    public ResponseEntity<VeiculoResponseDTOV1> buscarVeiculoV1(UUID id) {
+        return ResponseEntity.ok(VeiculoMapper.toResponse(service.buscar(id)));
     }
 
     @Override
-    public ResponseEntity<Void> excluirVeiculoV1(Integer id) {
-        service.excluir(id.longValue());
+    public ResponseEntity<Void> excluirVeiculoV1(UUID id) {
+        service.excluir(id);
         return ResponseEntity.noContent().build();
     }
 

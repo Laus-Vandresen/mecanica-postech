@@ -1,5 +1,6 @@
 package br.com.mecanica.controller;
 
+import java.util.UUID;
 import br.com.mecanica.api.InsumoV1Api;
 import br.com.mecanica.api.dto.InsumoRequestDTOV1;
 import br.com.mecanica.api.dto.InsumoResponseDTOV1;
@@ -25,13 +26,13 @@ public class InsumoController implements InsumoV1Api {
     }
 
     @Override
-    public ResponseEntity<InsumoResponseDTOV1> buscarInsumoV1(Integer id) {
-        return ResponseEntity.ok(InsumoMapper.toResponse(service.buscar(id.longValue())));
+    public ResponseEntity<InsumoResponseDTOV1> buscarInsumoV1(UUID id) {
+        return ResponseEntity.ok(InsumoMapper.toResponse(service.buscar(id)));
     }
 
     @Override
-    public ResponseEntity<Void> excluirInsumoV1(Integer id) {
-        service.excluir(id.longValue());
+    public ResponseEntity<Void> excluirInsumoV1(UUID id) {
+        service.excluir(id);
         return ResponseEntity.noContent().build();
     }
 

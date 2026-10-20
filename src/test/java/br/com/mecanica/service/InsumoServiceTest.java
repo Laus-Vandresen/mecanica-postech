@@ -1,5 +1,6 @@
 package br.com.mecanica.service;
 
+import java.util.UUID;
 import br.com.mecanica.entity.mapper.InsumoEntityMapper;
 import br.com.mecanica.domain.entity.Insumo;
 import br.com.mecanica.entity.InsumoEntity;
@@ -32,32 +33,32 @@ class InsumoServiceTest {
         when(repository.saveAndFlush(any())).thenAnswer(invocation -> {
             InsumoEntity salvo = invocation.getArgument(0);
             assertNull(salvo.getId());
-            salvo.setId(42L);
+            salvo.setId(uuid(42));
             return salvo;
         });
-        assertEquals(resposta(42L, request), service.criar(request));
+        assertEquals(resposta(uuid(42), request), service.criar(request));
         var captor = ArgumentCaptor.forClass(InsumoEntity.class);
         verify(repository).saveAndFlush(captor.capture());
-        assertEquals(resposta(42L, request), InsumoEntityMapper.toDomain(captor.getValue()));
+        assertEquals(resposta(uuid(42), request), InsumoEntityMapper.toDomain(captor.getValue()));
     }
 
     @Test
     void buscarRetornaTodosOsCamposDoCadastro() {
-        when(repository.findById(1L)).thenReturn(Optional.of(entidade(1L, dados(false))));
-        assertEquals(resposta(1L, dados(false)), service.buscar(1L));
+        when(repository.findById(uuid(1))).thenReturn(Optional.of(entidade(uuid(1), dados(false))));
+        assertEquals(resposta(uuid(1), dados(false)), service.buscar(uuid(1)));
     }
 
     @Test
     void buscarInexistenteLancaErro() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RecursoNaoEncontradoException.class, () -> service.buscar(99L));
+        when(repository.findById(uuid(99))).thenReturn(Optional.empty());
+        assertThrows(RecursoNaoEncontradoException.class, () -> service.buscar(uuid(99)));
     }
 
     @Test
     void listarRetornaCadastrosComOrdenacaoPorId() {
         when(repository.findAll(Sort.by("id"))).thenReturn(List.of(
-                entidade(1L, dados(false)), entidade(2L, dados(true))));
-        assertEquals(List.of(resposta(1L, dados(false)), resposta(2L, dados(true))), service.listar());
+                entidade(uuid(1), dados(false)), entidade(uuid(2), dados(true))));
+        assertEquals(List.of(resposta(uuid(1), dados(false)), resposta(uuid(2), dados(true))), service.listar());
     }
 
     @Test
@@ -68,27 +69,27 @@ class InsumoServiceTest {
 
     @Test
     void atualizarSubstituiCamposEPreservaIdentificador() {
-        var anterior = entidade(1L, dados(false));
+        var anterior = entidade(uuid(1), dados(false));
         var request = dados(true);
-        when(repository.findById(1L)).thenReturn(Optional.of(anterior));
+        when(repository.findById(uuid(1))).thenReturn(Optional.of(anterior));
         when(repository.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        assertEquals(resposta(1L, request), service.atualizar(1L, request));
+        assertEquals(resposta(uuid(1), request), service.atualizar(uuid(1), request));
         verify(repository).saveAndFlush(same(anterior));
-        assertEquals(resposta(1L, request), InsumoEntityMapper.toDomain(anterior));
+        assertEquals(resposta(uuid(1), request), InsumoEntityMapper.toDomain(anterior));
     }
 
     @Test
     void atualizarInexistenteNaoCriaCadastro() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RecursoNaoEncontradoException.class, () -> service.atualizar(99L, dados(true)));
+        when(repository.findById(uuid(99))).thenReturn(Optional.empty());
+        assertThrows(RecursoNaoEncontradoException.class, () -> service.atualizar(uuid(99), dados(true)));
         verify(repository, never()).saveAndFlush(any());
     }
 
     @Test
     void excluirRemoveCadastroExistenteEConfirmaRestricoes() {
-        var entity = entidade(1L, dados(false));
-        when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        service.excluir(1L);
+        var entity = entidade(uuid(1), dados(false));
+        when(repository.findById(uuid(1))).thenReturn(Optional.of(entity));
+        service.excluir(uuid(1));
         var ordem = inOrder(repository);
         ordem.verify(repository).delete(entity);
         ordem.verify(repository).flush();
@@ -96,25 +97,25 @@ class InsumoServiceTest {
 
     @Test
     void excluirInexistenteNaoRemoveOutrosCadastros() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RecursoNaoEncontradoException.class, () -> service.excluir(99L));
+        when(repository.findById(uuid(99))).thenReturn(Optional.empty());
+        assertThrows(RecursoNaoEncontradoException.class, () -> service.excluir(uuid(99)));
         verify(repository, never()).delete(any());
         verify(repository, never()).flush();
     }
 
     @Test
     void exclusaoComVinculoPropagaConflitoParaTratamentoHttp() {
-        when(repository.findById(1L)).thenReturn(Optional.of(entidade(1L, dados(false))));
+        when(repository.findById(uuid(1))).thenReturn(Optional.of(entidade(uuid(1), dados(false))));
         var conflito = new DataIntegrityViolationException("Vinculo existente");
         doThrow(conflito).when(repository).flush();
-        assertSame(conflito, assertThrows(DataIntegrityViolationException.class, () -> service.excluir(1L)));
+        assertSame(conflito, assertThrows(DataIntegrityViolationException.class, () -> service.excluir(uuid(1))));
     }
 
     private Insumo dados(boolean atualizado) {
         return atualizado ? new Insumo(null, "Fluido", null, BigDecimal.ZERO, 0, "ml") : new Insumo(null, "Oleo", "Lubrificante", new BigDecimal("40.00"), 20, "L");
     }
 
-    private InsumoEntity entidade(Long id, Insumo request) {
+    private InsumoEntity entidade(UUID id, Insumo request) {
         var entity = new InsumoEntity();
         entity.setId(id);
         entity.setNome(request.getNome());
@@ -125,7 +126,10 @@ class InsumoServiceTest {
         return entity;
     }
 
-    private Insumo resposta(Long id, Insumo request) {
+    private Insumo resposta(UUID id, Insumo request) {
         return new Insumo(id, request.getNome(), request.getDescricao(), request.getValor(), request.getQuantidadeEstoque(), request.getUnidadeMedida());
+    }
+    private static UUID uuid(long value) {
+        return new UUID(0L, value);
     }
 }

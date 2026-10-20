@@ -1,5 +1,6 @@
 package br.com.mecanica.domain.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,12 +18,12 @@ import java.util.List;
 @EqualsAndHashCode
 public class OrdemServico {
 
-    private Long id;
-    private Long clienteId;
-    private Long veiculoId;
-    private Long orcamentoId;
-    private List<Long> servicoIds;
-    private List<Long> produtoIds;
+    private UUID id;
+    private UUID clienteId;
+    private UUID veiculoId;
+    private UUID orcamentoId;
+    private List<UUID> servicoIds;
+    private List<UUID> produtoIds;
     private LocalDateTime dataAbertura;
     private LocalDateTime dataFechamento;
     private String status;

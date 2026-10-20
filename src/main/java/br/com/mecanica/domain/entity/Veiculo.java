@@ -1,5 +1,6 @@
 package br.com.mecanica.domain.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,11 +14,11 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class Veiculo {
 
-    private Long id;
+    private UUID id;
     private String placa;
     private String modelo;
     private String marca;
     private Integer ano;
-    private Long clienteId;
+    private UUID clienteId;
 
 }

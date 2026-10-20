@@ -1,5 +1,6 @@
 package br.com.mecanica.service;
 
+import java.util.UUID;
 import br.com.mecanica.entity.mapper.VeiculoEntityMapper;
 import br.com.mecanica.domain.entity.Veiculo;
 import br.com.mecanica.entity.ClienteEntity;
@@ -23,7 +24,7 @@ public class VeiculoService {
         return repository.findAll(Sort.by("id")).stream().map(VeiculoEntityMapper::toDomain).toList();
     }
 
-    public Veiculo buscar(Long id) {
+    public Veiculo buscar(UUID id) {
         return VeiculoEntityMapper.toDomain(encontrar(id));
     }
 
@@ -36,7 +37,7 @@ public class VeiculoService {
     }
 
     @Transactional
-    public Veiculo atualizar(Long id, Veiculo veiculo) {
+    public Veiculo atualizar(UUID id, Veiculo veiculo) {
         var entity = encontrar(id);
         VeiculoEntityMapper.updateEntity(veiculo, entity);
         entity.setCliente(encontrarCliente(veiculo.getClienteId()));
@@ -44,17 +45,17 @@ public class VeiculoService {
     }
 
     @Transactional
-    public void excluir(Long id) {
+    public void excluir(UUID id) {
         repository.delete(encontrar(id));
         repository.flush();
     }
 
-    private VeiculoEntity encontrar(Long id) {
+    private VeiculoEntity encontrar(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Veiculo nao encontrado"));
     }
 
-    private ClienteEntity encontrarCliente(Long clienteId) {
+    private ClienteEntity encontrarCliente(UUID clienteId) {
         return clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente nao encontrado"));
     }

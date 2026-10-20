@@ -42,6 +42,7 @@ class MecanicaApplicationTests {
         entityManager.clear();
 
         assertNotNull(servico.getId());
+        assertEquals(4, servico.getId().version());
         var salvo = entityManager.find(ServicoEntity.class, servico.getId());
         assertEquals("Troca de oleo", salvo.getNome());
         assertEquals(new BigDecimal("150.00"), salvo.getValor());

@@ -1,5 +1,6 @@
 package br.com.mecanica.domain.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,7 +16,7 @@ import java.math.BigDecimal;
 @EqualsAndHashCode
 public class Insumo {
 
-    private Long id;
+    private UUID id;
     private String nome;
     private String descricao;
     private BigDecimal valor;

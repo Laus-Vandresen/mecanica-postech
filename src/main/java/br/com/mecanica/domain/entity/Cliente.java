@@ -1,5 +1,6 @@
 package br.com.mecanica.domain.entity;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class Cliente {
 
-    private Long id;
+    private UUID id;
     private String nome;
     private String celular;
     private String email;

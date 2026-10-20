@@ -1,5 +1,6 @@
 package br.com.mecanica.controller;
 
+import java.util.UUID;
 import br.com.mecanica.api.ClienteV1Api;
 import br.com.mecanica.api.dto.ClienteRequestDTOV1;
 import br.com.mecanica.api.dto.ClienteResponseDTOV1;
@@ -25,13 +26,13 @@ public class ClienteController implements ClienteV1Api {
     }
 
     @Override
-    public ResponseEntity<ClienteResponseDTOV1> buscarClienteV1(Integer id) {
-        return ResponseEntity.ok(ClienteMapper.toResponse(service.buscar(id.longValue())));
+    public ResponseEntity<ClienteResponseDTOV1> buscarClienteV1(UUID id) {
+        return ResponseEntity.ok(ClienteMapper.toResponse(service.buscar(id)));
     }
 
     @Override
-    public ResponseEntity<Void> excluirClienteV1(Integer id) {
-        service.excluir(id.longValue());
+    public ResponseEntity<Void> excluirClienteV1(UUID id) {
+        service.excluir(id);
         return ResponseEntity.noContent().build();
     }
 

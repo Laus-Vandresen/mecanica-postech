@@ -1,5 +1,6 @@
 package br.com.mecanica.service;
 
+import java.util.UUID;
 import br.com.mecanica.domain.entity.OrdemServico;
 import br.com.mecanica.entity.ServicoEntity;
 import br.com.mecanica.repository.*;
@@ -21,7 +22,7 @@ public class OrdemServicoService {
         return repository.findAll(Sort.by("id")).stream().map(this::toResponse).toList();
     }
 
-    public OrdemServico buscar(Long id) {
+    public OrdemServico buscar(UUID id) {
         return toResponse(encontrar(id));
     }
 
@@ -34,7 +35,7 @@ public class OrdemServicoService {
     }
 
     @Transactional
-    public OrdemServico atualizar(Long id, OrdemServico ordem) {
+    public OrdemServico atualizar(UUID id, OrdemServico ordem) {
         var entity = encontrar(id);
         if (ordem.getDiagnostico() != null) {
             entity.setNome(ordem.getDiagnostico());
@@ -43,12 +44,12 @@ public class OrdemServicoService {
     }
 
     @Transactional
-    public void excluir(Long id) {
+    public void excluir(UUID id) {
         repository.delete(encontrar(id));
         repository.flush();
     }
 
-    private ServicoEntity encontrar(Long id) {
+    private ServicoEntity encontrar(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Servico nao encontrado"));
     }

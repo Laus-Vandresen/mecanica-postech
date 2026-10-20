@@ -1,5 +1,6 @@
 package br.com.mecanica.service;
 
+import java.util.UUID;
 import br.com.mecanica.entity.mapper.InsumoEntityMapper;
 import br.com.mecanica.domain.entity.Insumo;
 import br.com.mecanica.entity.InsumoEntity;
@@ -21,7 +22,7 @@ public class InsumoService {
         return repository.findAll(Sort.by("id")).stream().map(InsumoEntityMapper::toDomain).toList();
     }
 
-    public Insumo buscar(Long id) {
+    public Insumo buscar(UUID id) {
         return InsumoEntityMapper.toDomain(encontrar(id));
     }
 
@@ -31,19 +32,19 @@ public class InsumoService {
     }
 
     @Transactional
-    public Insumo atualizar(Long id, Insumo insumo) {
+    public Insumo atualizar(UUID id, Insumo insumo) {
         var entity = encontrar(id);
         InsumoEntityMapper.updateEntity(insumo, entity);
         return InsumoEntityMapper.toDomain(repository.saveAndFlush(entity));
     }
 
     @Transactional
-    public void excluir(Long id) {
+    public void excluir(UUID id) {
         repository.delete(encontrar(id));
         repository.flush();
     }
 
-    private InsumoEntity encontrar(Long id) {
+    private InsumoEntity encontrar(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Insumo nao encontrado"));
     }

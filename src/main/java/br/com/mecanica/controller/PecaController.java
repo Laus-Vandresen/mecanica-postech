@@ -1,5 +1,6 @@
 package br.com.mecanica.controller;
 
+import java.util.UUID;
 import br.com.mecanica.api.PecaV1Api;
 import br.com.mecanica.api.dto.PecaRequestDTOV1;
 import br.com.mecanica.api.dto.PecaResponseDTOV1;
@@ -25,13 +26,13 @@ public class PecaController implements PecaV1Api {
     }
 
     @Override
-    public ResponseEntity<PecaResponseDTOV1> buscarPecaV1(Integer id) {
-        return ResponseEntity.ok(PecaMapper.toResponse(service.buscar(id.longValue())));
+    public ResponseEntity<PecaResponseDTOV1> buscarPecaV1(UUID id) {
+        return ResponseEntity.ok(PecaMapper.toResponse(service.buscar(id)));
     }
 
     @Override
-    public ResponseEntity<Void> excluirPecaV1(Integer id) {
-        service.excluir(id.longValue());
+    public ResponseEntity<Void> excluirPecaV1(UUID id) {
+        service.excluir(id);
         return ResponseEntity.noContent().build();
     }
 

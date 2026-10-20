@@ -1,5 +1,6 @@
 package br.com.mecanica.controller;
 
+import java.util.UUID;
 import br.com.mecanica.api.OrdemServicoV1Api;
 import br.com.mecanica.api.dto.OrdemServicoPatchRequestDTOV1;
 import br.com.mecanica.api.dto.OrdemServicoRequestDTOV1;
@@ -25,24 +26,24 @@ public class OrdemServicoController implements OrdemServicoV1Api {
     }
 
     @Override
-    public ResponseEntity<List<OrdemServicoResponseDTOV1>> listaOrdensServicoV1(Integer clienteId, Integer veiculoId, String status) {
+    public ResponseEntity<List<OrdemServicoResponseDTOV1>> listaOrdensServicoV1(UUID clienteId, UUID veiculoId, String status) {
         return ResponseEntity.ok(OrdemServicoMapper.toResponse(service.listar()));
     }
 
     @Override
-    public ResponseEntity<OrdemServicoResponseDTOV1> buscarOrdemServicoV1(Integer id) {
-        return ResponseEntity.ok(OrdemServicoMapper.toResponse(service.buscar(id.longValue())));
+    public ResponseEntity<OrdemServicoResponseDTOV1> buscarOrdemServicoV1(UUID id) {
+        return ResponseEntity.ok(OrdemServicoMapper.toResponse(service.buscar(id)));
     }
 
     @Override
-    public ResponseEntity<OrdemServicoResponseDTOV1> atualizarOrdemServicoV1(Integer id, OrdemServicoPatchRequestDTOV1 request) {
-        return ResponseEntity.ok(OrdemServicoMapper.toResponse(service.atualizar(id.longValue(), OrdemServicoMapper.toDomain(request))));
+    public ResponseEntity<OrdemServicoResponseDTOV1> atualizarOrdemServicoV1(UUID id, OrdemServicoPatchRequestDTOV1 request) {
+        return ResponseEntity.ok(OrdemServicoMapper.toResponse(service.atualizar(id, OrdemServicoMapper.toDomain(request))));
     }
 
     @Override
-    public ResponseEntity<OrdemServicoResponseDTOV1> cancelarOrdemServicoV1(Integer id) {
-        var existente = service.buscar(id.longValue());
-        service.excluir(id.longValue());
+    public ResponseEntity<OrdemServicoResponseDTOV1> cancelarOrdemServicoV1(UUID id) {
+        var existente = service.buscar(id);
+        service.excluir(id);
         return ResponseEntity.ok(OrdemServicoMapper.toResponse(existente));
     }
 }

@@ -456,56 +456,56 @@ components:
       required: true
       description: ID do cliente
       schema:
-        type: integer
-        format: int32
+        type: string
+        format: uuid
     VeiculoId:
       name: id
       in: path
       required: true
       description: ID do veículo
       schema:
-        type: integer
-        format: int32
+        type: string
+        format: uuid
     PecaId:
       name: id
       in: path
       required: true
       description: ID da peça
       schema:
-        type: integer
-        format: int32
+        type: string
+        format: uuid
     InsumoId:
       name: id
       in: path
       required: true
       description: ID do insumo
       schema:
-        type: integer
-        format: int32
+        type: string
+        format: uuid
     OrdemServicoId:
       name: id
       in: path
       required: true
       description: ID da ordem de serviço
       schema:
-        type: integer
-        format: int32
+        type: string
+        format: uuid
     ClienteIdQuery:
       name: clienteId
       in: query
       required: false
       description: Filtra pelo ID do cliente
       schema:
-        type: integer
-        format: int32
+        type: string
+        format: uuid
     VeiculoIdQuery:
       name: veiculoId
       in: query
       required: false
       description: Filtra pelo ID do veículo
       schema:
-        type: integer
-        format: int32
+        type: string
+        format: uuid
     OrdemServicoStatusQuery:
       name: status
       in: query
@@ -551,7 +551,8 @@ components:
         - cpf
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
           description: ID do cliente
         nome:
           type: string
@@ -597,9 +598,8 @@ components:
           maximum: 2100
           description: Ano do veículo
         clienteId:
-          type: integer
-          format: int32
-          minimum: 1
+          type: string
+          format: uuid
           description: ID do cliente proprietário
     VeiculoResponseDTOV1:
       type: object
@@ -610,7 +610,8 @@ components:
         - clienteId
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
           description: ID do veículo
         placa:
           type: string
@@ -626,7 +627,8 @@ components:
           format: int32
           description: Ano do veículo
         clienteId:
-          type: integer
+          type: string
+          format: uuid
           description: ID do cliente proprietário
     PecaRequestDTOV1:
       type: object
@@ -669,7 +671,8 @@ components:
         - nome
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
           description: ID da peça
         quantidadeEstoque:
           type: integer
@@ -733,7 +736,8 @@ components:
         - unidadeMedida
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
           description: ID do insumo
         quantidadeEstoque:
           type: integer
@@ -759,12 +763,12 @@ components:
         - veiculoId
       properties:
         clienteId:
-          type: integer
-          format: int32
+          type: string
+          format: uuid
           description: ID do cliente
         veiculoId:
-          type: integer
-          format: int32
+          type: string
+          format: uuid
           description: ID do veículo
         descricao:
           type: string
@@ -772,14 +776,14 @@ components:
         servicoIds:
           type: array
           items:
-            type: integer
-            format: int32
+            type: string
+            format: uuid
           description: IDs dos serviços associados
         produtoIds:
           type: array
           items:
-            type: integer
-            format: int32
+            type: string
+            format: uuid
           description: IDs das peças ou insumos associados
     OrdemServicoPatchRequestDTOV1:
       type: object
@@ -795,20 +799,20 @@ components:
           format: date-time
           description: Data de fechamento da ordem
         orcamentoId:
-          type: integer
-          format: int32
+          type: string
+          format: uuid
           description: ID do orçamento associado
         servicoIds:
           type: array
           items:
-            type: integer
-            format: int32
+            type: string
+            format: uuid
           description: IDs dos serviços associados
         produtoIds:
           type: array
           items:
-            type: integer
-            format: int32
+            type: string
+            format: uuid
           description: IDs das peças ou insumos associados
         valorTotal:
           type: number
@@ -827,26 +831,32 @@ components:
         - valorTotal
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
           description: ID da ordem de serviço
         clienteId:
-          type: integer
+          type: string
+          format: uuid
           description: ID do cliente
         veiculoId:
-          type: integer
+          type: string
+          format: uuid
           description: ID do veículo
         orcamentoId:
-          type: integer
+          type: string
+          format: uuid
           description: ID do orçamento associado
         servicoIds:
           type: array
           items:
-            type: integer
+            type: string
+            format: uuid
           description: IDs dos serviços associados
         produtoIds:
           type: array
           items:
-            type: integer
+            type: string
+            format: uuid
           description: IDs das peças ou insumos associados
         dataAbertura:
           type: string

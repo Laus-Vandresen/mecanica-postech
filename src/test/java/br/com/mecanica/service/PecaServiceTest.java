@@ -1,5 +1,6 @@
 package br.com.mecanica.service;
 
+import java.util.UUID;
 import br.com.mecanica.entity.mapper.PecaEntityMapper;
 import br.com.mecanica.domain.entity.Peca;
 import br.com.mecanica.entity.PecaEntity;
@@ -32,32 +33,32 @@ class PecaServiceTest {
         when(repository.saveAndFlush(any())).thenAnswer(invocation -> {
             PecaEntity salvo = invocation.getArgument(0);
             assertNull(salvo.getId());
-            salvo.setId(42L);
+            salvo.setId(uuid(42));
             return salvo;
         });
-        assertEquals(resposta(42L, request), service.criar(request));
+        assertEquals(resposta(uuid(42), request), service.criar(request));
         var captor = ArgumentCaptor.forClass(PecaEntity.class);
         verify(repository).saveAndFlush(captor.capture());
-        assertEquals(resposta(42L, request), PecaEntityMapper.toDomain(captor.getValue()));
+        assertEquals(resposta(uuid(42), request), PecaEntityMapper.toDomain(captor.getValue()));
     }
 
     @Test
     void buscarRetornaTodosOsCamposDoCadastro() {
-        when(repository.findById(1L)).thenReturn(Optional.of(entidade(1L, dados(false))));
-        assertEquals(resposta(1L, dados(false)), service.buscar(1L));
+        when(repository.findById(uuid(1))).thenReturn(Optional.of(entidade(uuid(1), dados(false))));
+        assertEquals(resposta(uuid(1), dados(false)), service.buscar(uuid(1)));
     }
 
     @Test
     void buscarInexistenteLancaErro() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RecursoNaoEncontradoException.class, () -> service.buscar(99L));
+        when(repository.findById(uuid(99))).thenReturn(Optional.empty());
+        assertThrows(RecursoNaoEncontradoException.class, () -> service.buscar(uuid(99)));
     }
 
     @Test
     void listarRetornaCadastrosComOrdenacaoPorId() {
         when(repository.findAll(Sort.by("id"))).thenReturn(List.of(
-                entidade(1L, dados(false)), entidade(2L, dados(true))));
-        assertEquals(List.of(resposta(1L, dados(false)), resposta(2L, dados(true))), service.listar());
+                entidade(uuid(1), dados(false)), entidade(uuid(2), dados(true))));
+        assertEquals(List.of(resposta(uuid(1), dados(false)), resposta(uuid(2), dados(true))), service.listar());
     }
 
     @Test
@@ -68,27 +69,27 @@ class PecaServiceTest {
 
     @Test
     void atualizarSubstituiCamposEPreservaIdentificador() {
-        var anterior = entidade(1L, dados(false));
+        var anterior = entidade(uuid(1), dados(false));
         var request = dados(true);
-        when(repository.findById(1L)).thenReturn(Optional.of(anterior));
+        when(repository.findById(uuid(1))).thenReturn(Optional.of(anterior));
         when(repository.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        assertEquals(resposta(1L, request), service.atualizar(1L, request));
+        assertEquals(resposta(uuid(1), request), service.atualizar(uuid(1), request));
         verify(repository).saveAndFlush(same(anterior));
-        assertEquals(resposta(1L, request), PecaEntityMapper.toDomain(anterior));
+        assertEquals(resposta(uuid(1), request), PecaEntityMapper.toDomain(anterior));
     }
 
     @Test
     void atualizarInexistenteNaoCriaCadastro() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RecursoNaoEncontradoException.class, () -> service.atualizar(99L, dados(true)));
+        when(repository.findById(uuid(99))).thenReturn(Optional.empty());
+        assertThrows(RecursoNaoEncontradoException.class, () -> service.atualizar(uuid(99), dados(true)));
         verify(repository, never()).saveAndFlush(any());
     }
 
     @Test
     void excluirRemoveCadastroExistenteEConfirmaRestricoes() {
-        var entity = entidade(1L, dados(false));
-        when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        service.excluir(1L);
+        var entity = entidade(uuid(1), dados(false));
+        when(repository.findById(uuid(1))).thenReturn(Optional.of(entity));
+        service.excluir(uuid(1));
         var ordem = inOrder(repository);
         ordem.verify(repository).delete(entity);
         ordem.verify(repository).flush();
@@ -96,25 +97,25 @@ class PecaServiceTest {
 
     @Test
     void excluirInexistenteNaoRemoveOutrosCadastros() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RecursoNaoEncontradoException.class, () -> service.excluir(99L));
+        when(repository.findById(uuid(99))).thenReturn(Optional.empty());
+        assertThrows(RecursoNaoEncontradoException.class, () -> service.excluir(uuid(99)));
         verify(repository, never()).delete(any());
         verify(repository, never()).flush();
     }
 
     @Test
     void exclusaoComVinculoPropagaConflitoParaTratamentoHttp() {
-        when(repository.findById(1L)).thenReturn(Optional.of(entidade(1L, dados(false))));
+        when(repository.findById(uuid(1))).thenReturn(Optional.of(entidade(uuid(1), dados(false))));
         var conflito = new DataIntegrityViolationException("Vinculo existente");
         doThrow(conflito).when(repository).flush();
-        assertSame(conflito, assertThrows(DataIntegrityViolationException.class, () -> service.excluir(1L)));
+        assertSame(conflito, assertThrows(DataIntegrityViolationException.class, () -> service.excluir(uuid(1))));
     }
 
     private Peca dados(boolean atualizado) {
         return atualizado ? new Peca(null, "Pastilha", null, BigDecimal.ZERO, 0, null) : new Peca(null, "Filtro", "Filtro de oleo", new BigDecimal("25.50"), 10, "Fabricante");
     }
 
-    private PecaEntity entidade(Long id, Peca request) {
+    private PecaEntity entidade(UUID id, Peca request) {
         var entity = new PecaEntity();
         entity.setId(id);
         entity.setNome(request.getNome());
@@ -125,7 +126,10 @@ class PecaServiceTest {
         return entity;
     }
 
-    private Peca resposta(Long id, Peca request) {
+    private Peca resposta(UUID id, Peca request) {
         return new Peca(id, request.getNome(), request.getDescricao(), request.getValor(), request.getQuantidadeEstoque(), request.getFabricante());
+    }
+    private static UUID uuid(long value) {
+        return new UUID(0L, value);
     }
 }
