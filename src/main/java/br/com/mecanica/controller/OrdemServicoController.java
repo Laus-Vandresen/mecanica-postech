@@ -5,6 +5,7 @@ import br.com.mecanica.api.OrdemServicoV1Api;
 import br.com.mecanica.api.dto.OrdemServicoPatchRequestDTOV1;
 import br.com.mecanica.api.dto.OrdemServicoRequestDTOV1;
 import br.com.mecanica.api.dto.OrdemServicoResponseDTOV1;
+import br.com.mecanica.api.dto.TempoMedioFinalizacaoResponseDTOV1;
 import br.com.mecanica.controller.mapper.OrdemServicoMapper;
 import br.com.mecanica.service.OrdemServicoService;
 import lombok.RequiredArgsConstructor;
@@ -45,5 +46,10 @@ public class OrdemServicoController implements OrdemServicoV1Api {
         var existente = service.buscar(id);
         service.excluir(id);
         return ResponseEntity.ok(OrdemServicoMapper.toResponse(existente));
+    }
+
+    @Override
+    public ResponseEntity<TempoMedioFinalizacaoResponseDTOV1> buscarTempoMedioFinalizacaoOrdemServicoV1() {
+        return ResponseEntity.ok(OrdemServicoMapper.toResponse(service.calcularTempoMedioFinalizacao()));
     }
 }

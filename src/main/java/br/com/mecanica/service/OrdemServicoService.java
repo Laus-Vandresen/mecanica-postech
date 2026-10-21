@@ -2,7 +2,10 @@ package br.com.mecanica.service;
 
 import java.util.UUID;
 import br.com.mecanica.domain.entity.OrdemServico;
+import br.com.mecanica.domain.service.OrdemServicoDomainService;
+import br.com.mecanica.domain.valueObject.TempoMedioFinalizacao;
 import br.com.mecanica.entity.ServicoEntity;
+import br.com.mecanica.entity.mapper.OrdemServicoEntityMapper;
 import br.com.mecanica.repository.*;
 import br.com.mecanica.exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,14 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class OrdemServicoService {
     private final ServicoRepository repository;
+    private final OrdemServicoRepository ordemServicoRepository;
+    private final OrdemServicoDomainService domainService;
+
+    public TempoMedioFinalizacao calcularTempoMedioFinalizacao() {
+        var ordens = ordemServicoRepository.findAllByDataFechamentoIsNotNull().stream()
+                .map(OrdemServicoEntityMapper::toDomain).toList();
+        return domainService.calcularTempoMedioFinalizacao(ordens);
+    }
 
     public List<OrdemServico> listar() {
         return repository.findAll(Sort.by("id")).stream().map(this::toResponse).toList();

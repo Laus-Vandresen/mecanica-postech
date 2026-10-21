@@ -3,7 +3,9 @@ package br.com.mecanica.controller.mapper;
 import br.com.mecanica.api.dto.OrdemServicoPatchRequestDTOV1;
 import br.com.mecanica.api.dto.OrdemServicoRequestDTOV1;
 import br.com.mecanica.api.dto.OrdemServicoResponseDTOV1;
+import br.com.mecanica.api.dto.TempoMedioFinalizacaoResponseDTOV1;
 import br.com.mecanica.domain.entity.OrdemServico;
+import br.com.mecanica.domain.valueObject.TempoMedioFinalizacao;
 import br.com.mecanica.core.modelmapper.ModelMapperConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -30,5 +32,10 @@ public final class OrdemServicoMapper {
 
     public static List<OrdemServicoResponseDTOV1> toResponse(List<OrdemServico> ordens) {
         return ordens.stream().map(OrdemServicoMapper::toResponse).toList();
+    }
+
+    public static TempoMedioFinalizacaoResponseDTOV1 toResponse(TempoMedioFinalizacao tempoMedio) {
+        return new TempoMedioFinalizacaoResponseDTOV1(tempoMedio.getQuantidadeOrdens(),
+                tempoMedio.getTempoMedio().toSeconds(), tempoMedio.getTempoMedio().toString());
     }
 }

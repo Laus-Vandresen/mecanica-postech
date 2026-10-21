@@ -378,6 +378,22 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
+  /v1/ordem-servico/tempo-medio-finalizacao:
+    get:
+      tags:
+        - ordemServicoV1
+      operationId: buscarTempoMedioFinalizacaoOrdemServicoV1
+      summary: Calcula o tempo médio de finalização das ordens de serviço
+      description: Calcula o tempo médio entre a data de abertura e a data de fechamento das ordens de serviço finalizadas
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TempoMedioFinalizacaoResponseDTOV1'
+
   /v1/ordem-servico/{id}:
     get:
       tags:
@@ -879,6 +895,25 @@ components:
           type: number
           format: double
           description: Valor total da ordem de serviço
+    TempoMedioFinalizacaoResponseDTOV1:
+      type: object
+      required:
+        - quantidadeOrdens
+        - tempoMedioSegundos
+        - tempoMedio
+      properties:
+        quantidadeOrdens:
+          type: integer
+          format: int32
+          description: Quantidade de ordens de serviço finalizadas consideradas no cálculo
+        tempoMedioSegundos:
+          type: integer
+          format: int64
+          description: Tempo médio de finalização em segundos
+        tempoMedio:
+          type: string
+          description: Tempo médio de finalização no formato ISO-8601
+          example: PT2H30M
     ErrorResponseDTOV1:
       type: object
       required:
