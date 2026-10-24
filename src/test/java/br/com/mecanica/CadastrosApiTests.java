@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.stream.Stream;
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:cadastros-test;DB_CLOSE_DELAY=-1")
 @AutoConfigureMockMvc
+@Import(JwtMockMvcTestConfig.class)
 @ActiveProfiles("test")
 class CadastrosApiTests {
     @Autowired MockMvc mvc;
@@ -77,13 +79,20 @@ class CadastrosApiTests {
     @ParameterizedTest
     @MethodSource("rotas")
     void recursoInexistenteEEntradaInvalida(String rota) throws Exception {
-        mvc.perform(get("/v1/" + rota + "/" + UUID.randomUUID())).andExpect(status().isNotFound());
+        mvc.perform(get("/v1/" + rota + "/" + UUID.randomUUID())).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.detail").exists());
         mvc.perform(delete("/v1/" + rota + "/" + UUID.randomUUID())).andExpect(status().isNotFound());
         mvc.perform(post("/v1/" + rota).contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos").isMap());
         mvc.perform(post("/v1/" + rota).contentType(MediaType.APPLICATION_JSON).content("{"))
-                .andExpect(status().isBadRequest());
-        mvc.perform(get("/v1/" + rota + "/abc")).andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith("application/problem+json"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").value("Corpo da requisicao invalido ou malformado."));
+        mvc.perform(get("/v1/" + rota + "/abc")).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").value("Parametro invalido ou em formato incorreto."));
         mvc.perform(get("/v1/" + rota + "/123")).andExpect(status().isBadRequest());
     }
 

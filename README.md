@@ -17,7 +17,7 @@ $env:SPRING_PROFILES_ACTIVE = 'aws'
 No IntelliJ, adicione `SPRING_PROFILES_ACTIVE=aws` Ã s variÃ¡veis da configuraÃ§Ã£o de
 MecanicaApplication e mantenha o diretÃ³rio de trabalho na raiz do projeto.
 O perfil aws importa `.env` como properties. NÃ£o versione credenciais.
-O arquivo antigo `application-local.properties` nÃ£o Ã© importado pelo perfil atual.
+Defina tambem `JWT_SECRET` com no minimo 32 bytes em UTF-8 no `.env`. Use um valor aleatorio forte. Cadastro e login: `POST /v1/auth/registrar` e `POST /v1/auth/autenticar`.
 A conexÃ£o usa TLS verify-full e o certificado pÃºblico em `certs/`.
 
 Para Docker: gere o JAR com `.\mvnw.cmd package` e execute `docker compose up --build`.

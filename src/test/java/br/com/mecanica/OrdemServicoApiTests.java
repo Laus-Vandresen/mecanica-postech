@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:ordem-servico-test;DB_CLOSE_DELAY=-1")
 @AutoConfigureMockMvc
+@Import(JwtMockMvcTestConfig.class)
 @ActiveProfiles("test")
 class OrdemServicoApiTests {
     private static final LocalDateTime INICIO = LocalDateTime.of(2026, 1, 1, 8, 0);

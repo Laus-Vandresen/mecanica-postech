@@ -10,6 +10,8 @@ servers:
   - url: /mecanica
 
 tags:
+  - name: autenticacaoV1
+    description: Grupo de endpoints v1 para cadastro e autenticação de usuários
   - name: clienteV1
     description: Grupo de endpoints v1 para gerenciamento de clientes
   - name: veiculoV1
@@ -22,6 +24,65 @@ tags:
     description: Grupo de endpoints v1 para gerenciamento de ordens de serviço
 
 paths:
+  /v1/auth/registrar:
+    post:
+      tags:
+        - autenticacaoV1
+      operationId: registrarV1
+      summary: Cadastra um usuario
+      description: Cadastra um usuario para autenticacao (endpoint publico)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioRequestDTOV1'
+      responses:
+        '201':
+          description: Usuario cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Login ja cadastrado
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblemDetail'
+  /v1/auth/autenticar:
+    post:
+      tags:
+        - autenticacaoV1
+      operationId: autenticarV1
+      summary: Gera o token JWT
+      description: Autentica por login e senha e retorna um token JWT (endpoint publico)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequestDTOV1'
+      responses:
+        '200':
+          description: Token gerado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Credenciais invalidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTOV1'
+
   /v1/clientes:
     get:
       tags:
@@ -29,7 +90,6 @@ paths:
       operationId: listaClientesV1
       summary: Lista os clientes
       description: Lista os clientes da mecânica
-      security: []
       responses:
         '200':
           description: OK
@@ -45,7 +105,6 @@ paths:
       operationId: cadastrarClienteV1
       summary: Cadastra um cliente
       description: Cadastra um cliente na mecânica
-      security: []
       requestBody:
         required: true
         content:
@@ -69,7 +128,6 @@ paths:
       operationId: buscarClienteV1
       summary: Busca um cliente
       description: Busca um cliente específico pelo ID
-      security: []
       parameters:
         - $ref: '#/components/parameters/ClienteId'
       responses:
@@ -89,7 +147,6 @@ paths:
       operationId: excluirClienteV1
       summary: Exclui um cliente
       description: Exclui um cliente específico pelo ID
-      security: []
       parameters:
         - $ref: '#/components/parameters/ClienteId'
       responses:
@@ -107,7 +164,6 @@ paths:
       operationId: listaVeiculosV1
       summary: Lista os veículos
       description: Lista os veículos da mecânica
-      security: []
       responses:
         '200':
           description: OK
@@ -123,7 +179,6 @@ paths:
       operationId: cadastrarVeiculoV1
       summary: Cadastra um veículo
       description: Cadastra um veículo na mecânica
-      security: []
       requestBody:
         required: true
         content:
@@ -147,7 +202,6 @@ paths:
       operationId: buscarVeiculoV1
       summary: Busca um veículo
       description: Busca um veículo específico pelo ID
-      security: []
       parameters:
         - $ref: '#/components/parameters/VeiculoId'
       responses:
@@ -167,7 +221,6 @@ paths:
       operationId: excluirVeiculoV1
       summary: Exclui um veículo
       description: Exclui um veículo específico pelo ID
-      security: []
       parameters:
         - $ref: '#/components/parameters/VeiculoId'
       responses:
@@ -185,7 +238,6 @@ paths:
       operationId: listaPecasV1
       summary: Lista as peças
       description: Lista as peças da mecânica
-      security: []
       responses:
         '200':
           description: OK
@@ -201,7 +253,6 @@ paths:
       operationId: cadastrarPecaV1
       summary: Cadastra uma peça
       description: Cadastra uma peça na mecânica
-      security: []
       requestBody:
         required: true
         content:
@@ -225,7 +276,6 @@ paths:
       operationId: buscarPecaV1
       summary: Busca uma peça
       description: Busca uma peça específica pelo ID
-      security: []
       parameters:
         - $ref: '#/components/parameters/PecaId'
       responses:
@@ -245,7 +295,6 @@ paths:
       operationId: excluirPecaV1
       summary: Exclui uma peça
       description: Exclui uma peça específica pelo ID
-      security: []
       parameters:
         - $ref: '#/components/parameters/PecaId'
       responses:
@@ -263,7 +312,6 @@ paths:
       operationId: listaInsumosV1
       summary: Lista os insumos
       description: Lista os insumos da mecânica
-      security: []
       responses:
         '200':
           description: OK
@@ -279,7 +327,6 @@ paths:
       operationId: cadastrarInsumoV1
       summary: Cadastra um insumo
       description: Cadastra um insumo na mecânica
-      security: []
       requestBody:
         required: true
         content:
@@ -303,7 +350,6 @@ paths:
       operationId: buscarInsumoV1
       summary: Busca um insumo
       description: Busca um insumo específico pelo ID
-      security: []
       parameters:
         - $ref: '#/components/parameters/InsumoId'
       responses:
@@ -323,7 +369,6 @@ paths:
       operationId: excluirInsumoV1
       summary: Exclui um insumo
       description: Exclui um insumo específico pelo ID
-      security: []
       parameters:
         - $ref: '#/components/parameters/InsumoId'
       responses:
@@ -341,7 +386,6 @@ paths:
       operationId: listaOrdensServicoV1
       summary: Lista as ordens de serviço
       description: Lista as ordens de serviço da mecânica
-      security: []
       parameters:
         - $ref: '#/components/parameters/ClienteIdQuery'
         - $ref: '#/components/parameters/VeiculoIdQuery'
@@ -361,7 +405,6 @@ paths:
       operationId: cadastrarOrdemServicoV1
       summary: Cadastra uma ordem de serviço
       description: Cadastra uma ordem de serviço na mecânica
-      security: []
       requestBody:
         required: true
         content:
@@ -385,7 +428,6 @@ paths:
       operationId: buscarTempoMedioFinalizacaoOrdemServicoV1
       summary: Calcula o tempo médio de finalização das ordens de serviço
       description: Calcula o tempo médio entre a data de abertura e a data de fechamento das ordens de serviço finalizadas
-      security: []
       responses:
         '200':
           description: OK
@@ -401,7 +443,6 @@ paths:
       operationId: buscarOrdemServicoV1
       summary: Busca uma ordem de serviço
       description: Busca uma ordem de serviço específica pelo ID
-      security: []
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       responses:
@@ -421,7 +462,6 @@ paths:
       operationId: atualizarOrdemServicoV1
       summary: Atualiza uma ordem de serviço
       description: Atualiza parcialmente uma ordem de serviço
-      security: []
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       requestBody:
@@ -449,7 +489,6 @@ paths:
       operationId: cancelarOrdemServicoV1
       summary: Cancela uma ordem de serviço
       description: Cancela uma ordem de serviço sem remover seu histórico
-      security: []
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       responses:
@@ -464,7 +503,15 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+security:
+  - bearerAuth: []
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   parameters:
     ClienteId:
       name: id
@@ -543,6 +590,7 @@ components:
           minLength: 1
           maxLength: 120
           pattern: '.*\S.*'
+          example: string
           description: Nome do cliente
         celular:
           type: string
@@ -582,131 +630,89 @@ components:
         cpf:
           type: string
           description: CPF do cliente
-    VeiculoRequestDTOV1:
+    ErrorObjectDTOV1:
       type: object
       required:
-        - placa
-        - modelo
-        - marca
-        - ano
-        - clienteId
+        - name
+        - userMessage
       properties:
-        placa:
+        name:
           type: string
-          pattern: '^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$'
-          description: Placa do veículo
-        modelo:
+          description: Nome do campo que gerou o erro
+        userMessage:
           type: string
-          minLength: 1
-          maxLength: 80
-          pattern: '.*\S.*'
-          description: Modelo do veículo
-        marca:
-          type: string
-          minLength: 1
-          maxLength: 80
-          pattern: '.*\S.*'
-          description: Marca do veículo
-        ano:
-          type: integer
-          format: int32
-          minimum: 1886
-          maximum: 2100
-          description: Ano do veículo
-        clienteId:
-          type: string
-          format: uuid
-          description: ID do cliente proprietário
-    VeiculoResponseDTOV1:
+          description: Mensagem de erro do campo
+    ErrorResponseDTOV1:
       type: object
       required:
-        - id
-        - placa
-        - modelo
-        - clienteId
+        - status
+        - timestamp
+        - type
+        - title
+        - detail
+        - userMessage
       properties:
-        id:
-          type: string
-          format: uuid
-          description: ID do veículo
-        placa:
-          type: string
-          description: Placa do veículo
-        modelo:
-          type: string
-          description: Modelo do veículo
-        marca:
-          type: string
-          description: Marca do veículo
-        ano:
+        status:
           type: integer
-          format: int32
-          description: Ano do veículo
-        clienteId:
+          description: Código HTTP do erro
+        timestamp:
           type: string
-          format: uuid
-          description: ID do cliente proprietário
-    PecaRequestDTOV1:
+          format: date-time
+          description: Data e hora em que o erro ocorreu
+          example: '2026-01-01T23:59:00.0000000Z'
+        type:
+          type: string
+          description: Tipo do erro
+          example: /erro-de-sistema
+        title:
+          type: string
+          description: Título do erro
+        detail:
+          type: string
+          description: Detalhe técnico do erro
+        userMessage:
+          type: string
+          description: Mensagem de erro para o usuário
+        objects:
+          type: array
+          description: Campos que podem ter gerado o erro
+          items:
+            $ref: '#/components/schemas/ErrorObjectDTOV1'
+    ApiProblemDetail:
       type: object
       required:
-        - quantidadeEstoque
-        - valor
-        - nome
+        - type
+        - title
+        - status
+        - detail
       properties:
-        quantidadeEstoque:
+        type:
+          type: string
+          format: uri
+          description: URI que identifica a categoria do problema
+          example: about:blank
+        title:
+          type: string
+          description: Resumo do problema
+        status:
           type: integer
-          format: int32
-          minimum: 0
-          description: Quantidade da peça em estoque
-        valor:
-          type: number
-          format: double
-          minimum: 0
-          maximum: 9999999999.99
-          description: Valor da peça
-        nome:
+          description: Código HTTP do erro
+        detail:
           type: string
-          minLength: 1
-          maxLength: 120
-          pattern: '.*\S.*'
-          description: Nome da peça
-        descricao:
+          description: Detalhe seguro e legível do erro
+        instance:
           type: string
-          maxLength: 255
-          description: Descrição da peça
-        fabricante:
-          type: string
-          maxLength: 80
-          description: Fabricante da peça
-    PecaResponseDTOV1:
-      type: object
-      required:
-        - id
-        - quantidadeEstoque
-        - valor
-        - nome
-      properties:
-        id:
+          format: uri
+          description: URI da requisição que originou o erro
+        campos:
+          type: object
+          description: Mensagens de validação indexadas pelo nome do campo
+          additionalProperties:
+            type: string
+        errorId:
           type: string
           format: uuid
-          description: ID da peça
-        quantidadeEstoque:
-          type: integer
-          format: int32
-          description: Quantidade da peça em estoque
-        valor:
-          type: number
-          format: double
-          description: Valor da peça
-        nome:
-          type: string
-          description: Nome da peça
-        descricao:
-          type: string
-          description: Descrição da peça
-        fabricante:
-          type: string
-          description: Fabricante da peça
+          description: Identificador para correlacionar erros inesperados com os logs
     InsumoRequestDTOV1:
       type: object
       required:
@@ -772,35 +778,6 @@ components:
         unidadeMedida:
           type: string
           description: Unidade de medida do insumo
-    OrdemServicoRequestDTOV1:
-      type: object
-      required:
-        - clienteId
-        - veiculoId
-      properties:
-        clienteId:
-          type: string
-          format: uuid
-          description: ID do cliente
-        veiculoId:
-          type: string
-          format: uuid
-          description: ID do veículo
-        descricao:
-          type: string
-          description: Descrição da solicitação do cliente
-        servicoIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-          description: IDs dos serviços associados
-        produtoIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-          description: IDs das peças ou insumos associados
     OrdemServicoPatchRequestDTOV1:
       type: object
       properties:
@@ -834,6 +811,35 @@ components:
           type: number
           format: double
           description: Valor total da ordem de serviço
+    OrdemServicoRequestDTOV1:
+      type: object
+      required:
+        - clienteId
+        - veiculoId
+      properties:
+        clienteId:
+          type: string
+          format: uuid
+          description: ID do cliente
+        veiculoId:
+          type: string
+          format: uuid
+          description: ID do veículo
+        descricao:
+          type: string
+          description: Descrição da solicitação do cliente
+        servicoIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: IDs dos serviços associados
+        produtoIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: IDs das peças ou insumos associados
     OrdemServicoResponseDTOV1:
       type: object
       required:
@@ -895,6 +901,67 @@ components:
           type: number
           format: double
           description: Valor total da ordem de serviço
+    PecaRequestDTOV1:
+      type: object
+      required:
+        - quantidadeEstoque
+        - valor
+        - nome
+      properties:
+        quantidadeEstoque:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Quantidade da peça em estoque
+        valor:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 9999999999.99
+          description: Valor da peça
+        nome:
+          type: string
+          minLength: 1
+          maxLength: 120
+          pattern: '.*\S.*'
+          description: Nome da peça
+        descricao:
+          type: string
+          maxLength: 255
+          description: Descrição da peça
+        fabricante:
+          type: string
+          maxLength: 80
+          description: Fabricante da peça
+    PecaResponseDTOV1:
+      type: object
+      required:
+        - id
+        - quantidadeEstoque
+        - valor
+        - nome
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID da peça
+        quantidadeEstoque:
+          type: integer
+          format: int32
+          description: Quantidade da peça em estoque
+        valor:
+          type: number
+          format: double
+          description: Valor da peça
+        nome:
+          type: string
+          description: Nome da peça
+        descricao:
+          type: string
+          description: Descrição da peça
+        fabricante:
+          type: string
+          description: Fabricante da peça
     TempoMedioFinalizacaoResponseDTOV1:
       type: object
       required:
@@ -914,64 +981,151 @@ components:
           type: string
           description: Tempo médio de finalização no formato ISO-8601
           example: PT2H30M
-    ErrorResponseDTOV1:
+    TokenRequestDTOV1:
       type: object
       required:
-        - status
-        - timestamp
-        - type
-        - title
-        - detail
-        - userMessage
+        - login
+        - senha
       properties:
-        status:
+        login:
+          type: string
+          minLength: 1
+        senha:
+          type: string
+          minLength: 1
+          format: password
+    TokenResponseDTOV1:
+      type: object
+      required:
+        - accessToken
+        - tokenType
+        - expiresIn
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
           type: integer
-          description: Código HTTP do erro
-        timestamp:
-          type: string
-          format: date-time
-          description: Data e hora em que o erro ocorreu
-          example: '2026-01-01T23:59:00.0000000Z'
-        type:
-          type: string
-          description: Tipo do erro
-          example: /erro-de-sistema
-        title:
-          type: string
-          description: Título do erro
-        detail:
-          type: string
-          description: Detalhe técnico do erro
-        userMessage:
-          type: string
-          description: Mensagem de erro para o usuário
-        objects:
-          type: array
-          description: Campos que podem ter gerado o erro
-          items:
-            $ref: '#/components/schemas/ErrorObjectDTOV1'
-    ErrorObjectDTOV1:
+          format: int64
+          description: Validade do token em segundos
+    UsuarioRequestDTOV1:
       type: object
       required:
-        - name
-        - userMessage
+        - nome
+        - login
+        - senha
       properties:
-        name:
+        nome:
           type: string
-          description: Nome do campo que gerou o erro
-        userMessage:
+          minLength: 1
+          maxLength: 120
+          pattern: '.*\S.*'
+        celular:
           type: string
-          description: Mensagem de erro do campo
+          maxLength: 20
+        login:
+          type: string
+          minLength: 1
+          maxLength: 80
+          pattern: '.*\S.*'
+          example: string
+        senha:
+          type: string
+          minLength: 6
+          maxLength: 72
+          format: password
+    UsuarioResponseDTOV1:
+      type: object
+      required:
+        - id
+        - nome
+        - login
+      properties:
+        id:
+          type: string
+          format: uuid
+        nome:
+          type: string
+        celular:
+          type: string
+        login:
+          type: string
+    VeiculoRequestDTOV1:
+      type: object
+      required:
+        - placa
+        - modelo
+        - marca
+        - ano
+        - clienteId
+      properties:
+        placa:
+          type: string
+          pattern: '^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$'
+          description: Placa do veículo
+        modelo:
+          type: string
+          minLength: 1
+          maxLength: 80
+          pattern: '.*\S.*'
+          description: Modelo do veículo
+        marca:
+          type: string
+          minLength: 1
+          maxLength: 80
+          pattern: '.*\S.*'
+          description: Marca do veículo
+        ano:
+          type: integer
+          format: int32
+          minimum: 1886
+          maximum: 2100
+          description: Ano do veículo
+        clienteId:
+          type: string
+          format: uuid
+          description: ID do cliente proprietário
+    VeiculoResponseDTOV1:
+      type: object
+      required:
+        - id
+        - placa
+        - modelo
+        - clienteId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID do veículo
+        placa:
+          type: string
+          description: Placa do veículo
+        modelo:
+          type: string
+          description: Modelo do veículo
+        marca:
+          type: string
+          description: Marca do veículo
+        ano:
+          type: integer
+          format: int32
+          description: Ano do veículo
+        clienteId:
+          type: string
+          format: uuid
+          description: ID do cliente proprietário
   responses:
     BadRequest:
       description: Requisição inválida
       content:
-        application/json:
+        application/problem+json:
           schema:
-            $ref: '#/components/schemas/ErrorResponseDTOV1'
+            $ref: '#/components/schemas/ApiProblemDetail'
     NotFound:
       description: Recurso não encontrado
       content:
-        application/json:
+        application/problem+json:
           schema:
-            $ref: '#/components/schemas/ErrorResponseDTOV1'
+            $ref: '#/components/schemas/ApiProblemDetail'
