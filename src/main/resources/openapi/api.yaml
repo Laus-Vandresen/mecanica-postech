@@ -22,6 +22,8 @@ tags:
     description: Grupo de endpoints v1 para gerenciamento de insumos
   - name: ordemServicoV1
     description: Grupo de endpoints v1 para gerenciamento de ordens de serviço
+  - name: estoqueV1
+    description: Grupo de endpoints v1 para controle de estoque de produtos
 
 paths:
   /v1/auth/registrar:
@@ -712,6 +714,41 @@ paths:
         '409':
           description: Operação incompatível com o estado ou conflito de dados
 
+  /v1/produtos/{id}/estoque:
+    post:
+      tags:
+        - estoqueV1
+      operationId: movimentarEstoqueV1
+      summary: Movimenta o estoque de um produto
+      description: Aumenta (ENTRADA) ou diminui (SAIDA) o estoque de uma peça ou insumo de forma atômica
+      parameters:
+        - $ref: '#/components/parameters/ProdutoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovimentacaoEstoqueRequestDTOV1'
+      responses:
+        '200':
+          description: Estoque movimentado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstoqueResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Estoque insuficiente para a saída
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblemDetail'
+
 security:
   - bearerAuth: []
 
@@ -751,6 +788,14 @@ components:
       in: path
       required: true
       description: ID do insumo
+      schema:
+        type: string
+        format: uuid
+    ProdutoId:
+      name: id
+      in: path
+      required: true
+      description: ID do produto (peça ou insumo)
       schema:
         type: string
         format: uuid
@@ -996,6 +1041,37 @@ components:
           type: string
           format: uuid
           description: Identificador para correlacionar erros inesperados com os logs
+    MovimentacaoEstoqueRequestDTOV1:
+      type: object
+      required:
+        - operacao
+        - quantidade
+      properties:
+        operacao:
+          type: string
+          enum:
+            - ENTRADA
+            - SAIDA
+          description: ENTRADA aumenta o estoque, SAIDA diminui
+        quantidade:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Quantidade a movimentar
+    EstoqueResponseDTOV1:
+      type: object
+      required:
+        - produtoId
+        - quantidadeEstoque
+      properties:
+        produtoId:
+          type: string
+          format: uuid
+          description: ID do produto
+        quantidadeEstoque:
+          type: integer
+          format: int32
+          description: Quantidade em estoque após a movimentação
     InsumoRequestDTOV1:
       type: object
       required:
