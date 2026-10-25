@@ -29,7 +29,6 @@ public class ModelMapperConfig {
         var mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         configurarConversoresDeData(mapper);
-        configurarOrdemServico(mapper);
         return mapper;
     }
 
@@ -45,21 +44,4 @@ public class ModelMapperConfig {
                 OffsetDateTime.class, LocalDateTime.class);
     }
 
-    private static void configurarOrdemServico(ModelMapper mapper) {
-        mapper.typeMap(OrdemServicoEntity.class, OrdemServico.class)
-                .addMappings(m -> {
-                    m.map(src -> src.getCliente().getId(), OrdemServico::setClienteId);
-                    m.map(src -> src.getVeiculo().getId(), OrdemServico::setVeiculoId);
-                    m.map(src -> src.getOrcamento().getId(), OrdemServico::setOrcamentoId);
-                });
-
-        mapper.typeMap(OrdemServico.class, OrdemServicoEntity.class)
-                .addMappings(m -> {
-                    m.skip(OrdemServicoEntity::setCliente);
-                    m.skip(OrdemServicoEntity::setVeiculo);
-                    m.skip(OrdemServicoEntity::setOrcamento);
-                    m.skip(OrdemServicoEntity::setServicos);
-                    m.skip(OrdemServicoEntity::setProdutos);
-                });
-    }
 }

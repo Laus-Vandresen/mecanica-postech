@@ -15,8 +15,7 @@ class OrdemServicoDomainServiceTest {
 
     @Test
     void calculaMediaApenasDasOrdensFinalizadas() {
-        var emAndamento = new OrdemServico();
-        emAndamento.setDataAbertura(INICIO);
+        var emAndamento = OrdemServico.abrir(java.util.UUID.randomUUID(), "Teste", List.of(), List.of(), INICIO);
 
         var resultado = service.calcularTempoMedioFinalizacao(
                 List.of(ordem(Duration.ofHours(1)), ordem(Duration.ofHours(3)), emAndamento));
@@ -39,15 +38,14 @@ class OrdemServicoDomainServiceTest {
 
     @Test
     void ordemSemFechamentoNaoTemTempoDeFinalizacao() {
-        var ordem = new OrdemServico();
-        ordem.setDataAbertura(INICIO);
+        var ordem = OrdemServico.abrir(java.util.UUID.randomUUID(), "Teste", List.of(), List.of(), INICIO);
         assertTrue(ordem.tempoDeFinalizacao().isEmpty());
     }
 
     private static OrdemServico ordem(Duration duracao) {
-        var ordem = new OrdemServico();
-        ordem.setDataAbertura(INICIO);
-        ordem.setDataFechamento(INICIO.plus(duracao));
-        return ordem;
+        return OrdemServico.restaurar(new br.com.mecanica.domain.valueObject.EstadoOrdemServico(
+                java.util.UUID.randomUUID(), null, java.util.UUID.randomUUID(), null, List.of(), List.of(), INICIO,
+                INICIO.plus(duracao), br.com.mecanica.domain.valueObject.StatusOrdemServico.FINALIZADA,
+                "Teste", null, java.math.BigDecimal.ZERO, null, false, null));
     }
 }

@@ -1,6 +1,7 @@
 package br.com.mecanica.exception;
 
 import br.com.mecanica.api.dto.ErrorResponseDTOV1;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,20 @@ import java.util.UUID;
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    @ExceptionHandler(br.com.mecanica.domain.exception.RegraOrdemServicoException.class)
+    public ProblemDetail regraOs(br.com.mecanica.domain.exception.RegraOrdemServicoException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+    @ExceptionHandler(br.com.mecanica.domain.exception.DadosOrdemInvalidosException.class)
+    public ProblemDetail dadosOs(br.com.mecanica.domain.exception.DadosOrdemInvalidosException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ProblemDetail parametrosInvalidos(ConstraintViolationException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Parametros da requisicao invalidos.");
+    }
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)
     public ProblemDetail naoEncontrado(RecursoNaoEncontradoException ex) {

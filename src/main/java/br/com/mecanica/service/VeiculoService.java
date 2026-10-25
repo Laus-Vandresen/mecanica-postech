@@ -30,7 +30,7 @@ public class VeiculoService {
 
     @Transactional
     public Veiculo criar(Veiculo veiculo) {
-        var cliente = encontrarCliente(veiculo.getClienteId());
+        var cliente = veiculo.getClienteId() == null ? null : encontrarCliente(veiculo.getClienteId());
         var entity = VeiculoEntityMapper.toEntity(veiculo);
         entity.setCliente(cliente);
         return VeiculoEntityMapper.toDomain(repository.saveAndFlush(entity));
@@ -40,7 +40,7 @@ public class VeiculoService {
     public Veiculo atualizar(UUID id, Veiculo veiculo) {
         var entity = encontrar(id);
         VeiculoEntityMapper.updateEntity(veiculo, entity);
-        entity.setCliente(encontrarCliente(veiculo.getClienteId()));
+        if (veiculo.getClienteId() != null) entity.setCliente(encontrarCliente(veiculo.getClienteId()));
         return VeiculoEntityMapper.toDomain(repository.saveAndFlush(entity));
     }
 

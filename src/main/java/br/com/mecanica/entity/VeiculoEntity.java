@@ -37,6 +37,6 @@ public class VeiculoEntity {
     private Integer ano;
 
     @ManyToOne
-    @JoinColumn(name = "cliente_id", nullable = false)
+    @JoinColumn(name = "cliente_id")
     private ClienteEntity cliente;
 }

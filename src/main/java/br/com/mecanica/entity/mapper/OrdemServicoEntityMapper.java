@@ -1,31 +1,26 @@
 package br.com.mecanica.entity.mapper;
-
-import br.com.mecanica.core.modelmapper.ModelMapperConfig;
 import br.com.mecanica.domain.entity.OrdemServico;
-import br.com.mecanica.entity.OrdemServicoEntity;
-import br.com.mecanica.entity.ProdutoEntity;
-import br.com.mecanica.entity.ServicoEntity;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import org.modelmapper.ModelMapper;
-
-import java.util.List;
-
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+import br.com.mecanica.domain.valueObject.*;
+import br.com.mecanica.entity.*;
+import java.util.*;
 public final class OrdemServicoEntityMapper {
-
-    private static final ModelMapper MODEL_MAPPER = ModelMapperConfig.getModelMapper();
-
+    private OrdemServicoEntityMapper() {}
     public static OrdemServico toDomain(OrdemServicoEntity entity) {
-        var ordem = MODEL_MAPPER.map(entity, OrdemServico.class);
-        ordem.setServicoIds(entity.getServicos() == null ? List.of()
-                : entity.getServicos().stream().map(ServicoEntity::getId).toList());
-        ordem.setProdutoIds(entity.getProdutos() == null ? List.of()
-                : entity.getProdutos().stream().map(ProdutoEntity::getId).toList());
-        return ordem;
+        return OrdemServico.restaurar(new EstadoOrdemServico(entity.getId(),
+                entity.getCliente() == null ? null : entity.getCliente().getId(), entity.getVeiculo().getId(),
+                entity.getOrcamento() == null ? null : entity.getOrcamento().getId(),
+                entity.getServicos() == null ? List.of() : entity.getServicos().stream().map(ServicoEntity::getId).toList(),
+                entity.getProdutos() == null ? List.of() : entity.getProdutos().stream().map(ProdutoEntity::getId).toList(),
+                entity.getDataAbertura(), entity.getDataFechamento(), StatusOrdemServico.valueOf(entity.getStatus()),
+                entity.getDescricao(), entity.getDiagnostico(), entity.getValorTotal(), entity.getMotivoEncerramento(),
+                entity.isOrcamentoAprovado(), entity.getDataConclusaoExecucao()));
     }
-
-    public static OrdemServicoEntity toEntity(OrdemServico ordem) {
-        return MODEL_MAPPER.map(ordem, OrdemServicoEntity.class);
+    public static void atualizar(OrdemServico ordem, OrdemServicoEntity entity) {
+        entity.setId(ordem.getId()); entity.setStatus(ordem.getStatus().name());
+        entity.setDescricao(ordem.getDescricao()); entity.setDiagnostico(ordem.getDiagnostico());
+        entity.setDataAbertura(ordem.getDataAbertura()); entity.setDataFechamento(ordem.getDataFechamento());
+        entity.setValorTotal(ordem.getValorTotal()); entity.setMotivoEncerramento(ordem.getMotivoEncerramento());
+        entity.setOrcamentoAprovado(ordem.isOrcamentoAprovado());
+        entity.setDataConclusaoExecucao(ordem.getDataConclusaoExecucao());
     }
 }

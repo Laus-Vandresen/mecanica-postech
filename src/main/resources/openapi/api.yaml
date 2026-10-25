@@ -29,8 +29,8 @@ paths:
       tags:
         - autenticacaoV1
       operationId: registrarV1
-      summary: Cadastra um usuario
-      description: Cadastra um usuario para autenticacao (endpoint publico)
+      summary: Cadastra um usuário
+      description: Cadastra um usuário para autenticação (endpoint público)
       security: []
       requestBody:
         required: true
@@ -40,7 +40,7 @@ paths:
               $ref: '#/components/schemas/UsuarioRequestDTOV1'
       responses:
         '201':
-          description: Usuario cadastrado
+          description: Usuário cadastrado
           content:
             application/json:
               schema:
@@ -48,7 +48,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
         '409':
-          description: Login ja cadastrado
+          description: Login já cadastrado
           content:
             application/problem+json:
               schema:
@@ -59,7 +59,7 @@ paths:
         - autenticacaoV1
       operationId: autenticarV1
       summary: Gera o token JWT
-      description: Autentica por login e senha e retorna um token JWT (endpoint publico)
+      description: Autentica por login e senha e retorna um token JWT (endpoint público)
       security: []
       requestBody:
         required: true
@@ -77,7 +77,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
-          description: Credenciais invalidas
+          description: Credenciais inválidas
           content:
             application/json:
               schema:
@@ -390,6 +390,20 @@ paths:
         - $ref: '#/components/parameters/ClienteIdQuery'
         - $ref: '#/components/parameters/VeiculoIdQuery'
         - $ref: '#/components/parameters/OrdemServicoStatusQuery'
+        - $ref: '#/components/parameters/OrdemServicoFilaQuery'
+        - name: pagina
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: tamanho
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         '200':
           description: OK
@@ -456,12 +470,32 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /v1/ordem-servico/{id}/diagnostico/inicio:
+    post:
+      tags: [ordemServicoV1]
+      operationId: iniciarDiagnosticoOrdemServicoV1
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      responses:
+        '200':
+          description: Operação registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Operação incompatível com o estado ou conflito de dados
+  /v1/ordem-servico/{id}/diagnostico:
     patch:
-      tags:
-        - ordemServicoV1
-      operationId: atualizarOrdemServicoV1
-      summary: Atualiza uma ordem de serviço
-      description: Atualiza parcialmente uma ordem de serviço
+      tags: [ordemServicoV1]
+      operationId: registrarDiagnosticoOrdemServicoV1
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       requestBody:
@@ -469,39 +503,214 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrdemServicoPatchRequestDTOV1'
+              $ref: '#/components/schemas/DiagnosticoOrdemServicoDTOV1'
       responses:
         '200':
-          description: Ordem de serviço atualizada
+          description: Operação registrada
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
         '404':
           $ref: '#/components/responses/NotFound'
-
-  /v1/ordem-servico/{id}/cancelamento:
+        '409':
+          description: Operação incompatível com o estado ou conflito de dados
+  /v1/ordem-servico/{id}/orcamento:
     post:
-      tags:
-        - ordemServicoV1
-      operationId: cancelarOrdemServicoV1
-      summary: Cancela uma ordem de serviço
-      description: Cancela uma ordem de serviço sem remover seu histórico
+      tags: [ordemServicoV1]
+      operationId: enviarOrcamentoOrdemServicoV1
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvioOrcamentoDTOV1'
+      responses:
+        '200':
+          description: Operação registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Operação incompatível com o estado ou conflito de dados
+  /v1/ordem-servico/{id}/aprovacao:
+    post:
+      tags: [ordemServicoV1]
+      operationId: aprovarOrdemServicoV1
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AprovacaoOrdemServicoDTOV1'
+      responses:
+        '200':
+          description: Operação registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Operação incompatível com o estado ou conflito de dados
+  /v1/ordem-servico/{id}/recusa:
+    post:
+      tags: [ordemServicoV1]
+      operationId: recusarOrdemServicoV1
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MotivoOrdemServicoDTOV1'
+      responses:
+        '200':
+          description: Operação registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Operação incompatível com o estado ou conflito de dados
+  /v1/ordem-servico/{id}/execucao/inicio:
+    post:
+      tags: [ordemServicoV1]
+      operationId: iniciarExecucaoOrdemServicoV1
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       responses:
         '200':
-          description: Ordem de serviço cancelada
+          description: Operação registrada
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          description: Operação incompatível com o estado ou conflito de dados
+  /v1/ordem-servico/{id}/execucao/conclusao:
+    post:
+      tags: [ordemServicoV1]
+      operationId: concluirExecucaoOrdemServicoV1
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      responses:
+        '200':
+          description: Operação registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Operação incompatível com o estado ou conflito de dados
+  /v1/ordem-servico/{id}/finalizacao:
+    post:
+      tags: [ordemServicoV1]
+      operationId: finalizarOrdemServicoV1
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      responses:
+        '200':
+          description: Operação registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Operação incompatível com o estado ou conflito de dados
+  /v1/ordem-servico/{id}/entrega:
+    post:
+      tags: [ordemServicoV1]
+      operationId: entregarOrdemServicoV1
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      responses:
+        '200':
+          description: Operação registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Operação incompatível com o estado ou conflito de dados
+  /v1/ordem-servico/{id}/cancelamento:
+    post:
+      tags: [ordemServicoV1]
+      operationId: cancelarOrdemServicoV1
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MotivoOrdemServicoDTOV1'
+      responses:
+        '200':
+          description: Operação registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Operação incompatível com o estado ou conflito de dados
 
 security:
   - bearerAuth: []
@@ -569,6 +778,18 @@ components:
       schema:
         type: string
         format: uuid
+    OrdemServicoFilaQuery:
+      name: fila
+      in: query
+      required: false
+      description: >-
+        Fila operacional. DIAGNOSTICO inclui OS recebidas aguardando início do diagnóstico;
+        EXECUCAO inclui OS aprovadas aguardando início da execução;
+        FINALIZACAO inclui OS com execução concluída aguardando finalização.
+        Combinada com os demais filtros antes da paginação.
+      schema:
+        type: string
+        enum: [DIAGNOSTICO, EXECUCAO, FINALIZACAO]
     OrdemServicoStatusQuery:
       name: status
       in: query
@@ -577,6 +798,68 @@ components:
       schema:
         type: string
   schemas:
+    DiagnosticoOrdemServicoDTOV1:
+      type: object
+      required: [diagnostico]
+      properties:
+        diagnostico:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          pattern: '.*\S.*'
+        servicoIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        produtoIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    EnvioOrcamentoDTOV1:
+      type: object
+      required: [orcamentoId]
+      properties:
+        orcamentoId:
+          type: string
+          format: uuid
+    AprovacaoOrdemServicoDTOV1:
+      type: object
+      properties:
+        clienteId:
+          type: string
+          format: uuid
+        cliente:
+          $ref: '#/components/schemas/ClienteAprovacaoDTOV1'
+    ClienteAprovacaoDTOV1:
+      type: object
+      required: [nome, cpf]
+      properties:
+        nome:
+          type: string
+          minLength: 1
+          maxLength: 120
+        cpf:
+          type: string
+          pattern: '^[0-9]{11}$'
+        celular:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          maxLength: 120
+    MotivoOrdemServicoDTOV1:
+      type: object
+      required: [motivo]
+      properties:
+        motivo:
+          type: string
+          minLength: 1
+          maxLength: 500
+          pattern: '.*\S.*'
+
     ClienteRequestDTOV1:
       type: object
       required:
@@ -778,73 +1061,32 @@ components:
         unidadeMedida:
           type: string
           description: Unidade de medida do insumo
-    OrdemServicoPatchRequestDTOV1:
-      type: object
-      properties:
-        diagnostico:
-          type: string
-          description: Diagnóstico realizado
-        status:
-          type: string
-          description: Status atual da ordem de serviço
-        dataFechamento:
-          type: string
-          format: date-time
-          description: Data de fechamento da ordem
-        orcamentoId:
-          type: string
-          format: uuid
-          description: ID do orçamento associado
-        servicoIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-          description: IDs dos serviços associados
-        produtoIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-          description: IDs das peças ou insumos associados
-        valorTotal:
-          type: number
-          format: double
-          description: Valor total da ordem de serviço
     OrdemServicoRequestDTOV1:
       type: object
-      required:
-        - clienteId
-        - veiculoId
+      required: [veiculoId, descricao]
       properties:
-        clienteId:
-          type: string
-          format: uuid
-          description: ID do cliente
         veiculoId:
           type: string
           format: uuid
-          description: ID do veículo
         descricao:
           type: string
-          description: Descrição da solicitação do cliente
+          minLength: 1
+          maxLength: 500
+          pattern: '.*\S.*'
         servicoIds:
           type: array
           items:
             type: string
             format: uuid
-          description: IDs dos serviços associados
         produtoIds:
           type: array
           items:
             type: string
             format: uuid
-          description: IDs das peças ou insumos associados
     OrdemServicoResponseDTOV1:
       type: object
       required:
         - id
-        - clienteId
         - veiculoId
         - servicoIds
         - produtoIds
@@ -899,8 +1141,14 @@ components:
           description: Diagnóstico realizado
         valorTotal:
           type: number
-          format: double
           description: Valor total da ordem de serviço
+        motivoEncerramento:
+          type: string
+        orcamentoAprovado:
+          type: boolean
+        dataConclusaoExecucao:
+          type: string
+          format: date-time
     PecaRequestDTOV1:
       type: object
       required:
@@ -1059,7 +1307,6 @@ components:
         - modelo
         - marca
         - ano
-        - clienteId
       properties:
         placa:
           type: string
@@ -1093,7 +1340,6 @@ components:
         - id
         - placa
         - modelo
-        - clienteId
       properties:
         id:
           type: string
