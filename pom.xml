@@ -16,6 +16,10 @@
 		<springdoc-openapi.version>3.1.1</springdoc-openapi.version>
 		<openapi-generator.version>7.26.0</openapi-generator.version>
 		<modelmapper.version>3.2.4</modelmapper.version>
+		<sonar-maven-plugin.version>5.8.0.7211</sonar-maven-plugin.version>
+		<sonar.java.jdkHome>${java.home}</sonar.java.jdkHome>
+		<sonar.projectKey>mecanica-postech</sonar.projectKey>
+		<sonar.projectName>Mecanica Postech</sonar.projectName>
 	</properties>
 	<dependencies>
 		<!-- Spring Boot application starters -->
@@ -167,6 +171,11 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>${sonar-maven-plugin.version}</version>
 			</plugin>
 		</plugins>
 	</build>

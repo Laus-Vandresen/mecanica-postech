@@ -112,3 +112,13 @@ Para executar apenas esses testes:
 Os testes HTTP de `CadastrosApiTests` continuam cobrindo validações de entrada,
 status HTTP e restrições reais no H2. Os mocks dos testes unitários não substituem
 esses testes de integração nem verificam transações do banco.
+
+## Análise local com SonarQube
+
+O SonarQube roda no Docker Compose. Suba o serviço com
+`docker compose up -d sonarqube` e execute o comando abaixo para testar e analisar.
+Veja [como configurar](docs/sonarqube-local.md).
+
+```powershell
+.\mvnw.cmd --batch-mode clean verify sonar:sonar -Dsonar.host.url=http://localhost:9000
+```
