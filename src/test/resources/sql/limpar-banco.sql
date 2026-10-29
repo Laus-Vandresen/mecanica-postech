@@ -1,0 +1,12 @@
+DELETE FROM ordem_servico_servicos;
+DELETE FROM ordem_servico_produtos;
+DELETE FROM ordem_servico;
+DELETE FROM orcamento;
+DELETE FROM veiculo;
+DELETE FROM cliente;
+DELETE FROM usuario;
+DELETE FROM pessoa;
+DELETE FROM peca;
+DELETE FROM insumo;
+DELETE FROM produto;
+DELETE FROM servico;
