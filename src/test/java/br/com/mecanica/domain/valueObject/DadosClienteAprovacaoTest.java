@@ -48,12 +48,19 @@ class DadosClienteAprovacaoTest {
     void validaTamanhoDoCelularEFormatoDoEmailQuandoInformados() {
         assertDoesNotThrow(() -> new DadosClienteAprovacao("Ana", "52998224725", null, null));
         assertDoesNotThrow(() -> new DadosClienteAprovacao("Ana", "52998224725", "1".repeat(20), "a@b.co"));
+        assertDoesNotThrow(() -> new DadosClienteAprovacao("Ana", "52998224725", null, "ana.silva@sub.example.com"));
         assertThrows(DadosOrdemInvalidosException.class,
                 () -> new DadosClienteAprovacao("Ana", "52998224725", "1".repeat(21), null));
         assertThrows(DadosOrdemInvalidosException.class,
                 () -> new DadosClienteAprovacao("Ana", "52998224725", null, "sem-arroba"));
         assertThrows(DadosOrdemInvalidosException.class,
+                () -> new DadosClienteAprovacao("Ana", "52998224725", null, "a@@b.co"));
+        assertThrows(DadosOrdemInvalidosException.class,
+                () -> new DadosClienteAprovacao("Ana", "52998224725", null, "a@b."));
+        assertThrows(DadosOrdemInvalidosException.class,
                 () -> new DadosClienteAprovacao("Ana", "52998224725", null, "a b@c.co"));
+        assertThrows(DadosOrdemInvalidosException.class,
+                () -> new DadosClienteAprovacao("Ana", "52998224725", null, "a\n@b.co"));
         assertThrows(DadosOrdemInvalidosException.class,
                 () -> new DadosClienteAprovacao("Ana", "52998224725", null, "a@b"));
         assertThrows(DadosOrdemInvalidosException.class,
