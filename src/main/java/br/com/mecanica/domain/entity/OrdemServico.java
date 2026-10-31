@@ -37,8 +37,10 @@ public final class OrdemServico {
     public static OrdemServico abrir(UUID veiculoId, String descricao, List<UUID> servicos,
             List<ItemProdutoOrdemServico> produtos, LocalDateTime agora) {
         if (veiculoId == null) throw new DadosOrdemInvalidosException("Veiculo obrigatorio");
+        var servicosValidados = itens(servicos);
+        var produtosValidados = itens(produtos);
         var ordem = new OrdemServico(new EstadoOrdemServico(UUID.randomUUID(), null, veiculoId, null,
-                servicos, produtos, agora, null, StatusOrdemServico.RECEBIDA,
+                servicosValidados, produtosValidados, agora, null, StatusOrdemServico.RECEBIDA,
                 texto(descricao, 500, "Descricao"), null, BigDecimal.ZERO, null, false, null));
         return ordem;
     }
