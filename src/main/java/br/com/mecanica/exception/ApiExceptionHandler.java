@@ -26,7 +26,7 @@ import java.util.UUID;
 
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ApiExceptionHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
     @ExceptionHandler(br.com.mecanica.domain.exception.RegraOrdemServicoException.class)
     public ProblemDetail regraOs(br.com.mecanica.domain.exception.RegraOrdemServicoException ex) {
@@ -109,7 +109,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                                                              HttpStatusCode status, WebRequest request) {
         if (status.is5xxServerError()) {
             var errorId = UUID.randomUUID().toString();
-            logger.error("Falha inesperada na API [errorId={}]", errorId, ex);
+            log.error("Falha inesperada na API [errorId={}]", errorId, ex);
             var problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Ocorreu um erro inesperado.");
             problem.setProperty("errorId", errorId);
