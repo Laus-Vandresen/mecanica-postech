@@ -122,3 +122,10 @@ Veja [como configurar](docs/sonarqube-local.md).
 ```powershell
 .\mvnw.cmd --batch-mode clean verify sonar:sonar -Dsonar.host.url=http://localhost:9000
 ```
+
+
+### Integração de estoque na OS
+
+A OS recebe `produtos: [{"produtoId":"UUID","quantidade":2}]` na abertura e no diagnóstico. Durante a execução, `PUT /v1/ordem-servico/{id}/produtos/{produtoId}/consumo` recebe `{"quantidadeConsumida":1}` e dá baixa imediata pela diferença em relação ao total já consumido. Repetir o mesmo total não gera nova baixa. Aprovação, conclusão e finalização não movimentam estoque.
+
+A V15 acrescenta quantidade prevista e consumida aos itens da OS, sem criar estruturas de reserva. V1 a V14 foram preservadas. Consulte [a documentação do consumo direto](docs/estoque-ordem-servico.md) para exemplos, regras e testes.

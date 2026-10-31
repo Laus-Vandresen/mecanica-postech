@@ -87,8 +87,44 @@ class OrdemServicoTest {
         assertThrows(DadosOrdemInvalidosException.class, () -> ordem.enviarParaAprovacao(UUID.randomUUID(), new BigDecimal("-1")));
         assertNull(ordem.getOrcamentoId()); assertEquals(StatusOrdemServico.EM_DIAGNOSTICO, ordem.getStatus());
     }
-    @Test void validaDadosDoClienteApenasNaAprovacao() {
-        assertThrows(DadosOrdemInvalidosException.class, () -> new DadosClienteAprovacao("Ana", "11111111111", null, null));
+    @Test void validaDadosDoClienteNaAprovacao() {
+        assertThrows(CpfInvalidoException.class, () -> new DadosClienteAprovacao("Ana", "11111111111", null, null));
         assertDoesNotThrow(() -> new DadosClienteAprovacao("Ana", "52998224725", null, "ana@example.com"));
+    }
+    @Test void produtosExigemQuantidadePositivaENaoPodemSeRepetir() {
+        var produto = UUID.randomUUID();
+        assertThrows(DadosOrdemInvalidosException.class, () -> new ItemProdutoOrdemServico(produto, 0));
+        assertThrows(DadosOrdemInvalidosException.class, () -> new ItemProdutoOrdemServico(produto, -1));
+        assertThrows(DadosOrdemInvalidosException.class, () -> new ItemProdutoOrdemServico(null, 1));
+        assertThrows(DadosOrdemInvalidosException.class, () -> OrdemServico.abrir(UUID.randomUUID(), "Teste", List.of(),
+                List.of(new ItemProdutoOrdemServico(produto, 1), new ItemProdutoOrdemServico(produto, 2)), agora));
+        var ordem = OrdemServico.abrir(UUID.randomUUID(), "Teste", List.of(), List.of(new ItemProdutoOrdemServico(produto, 3)), agora);
+        assertEquals(3, ordem.getProdutos().getFirst().quantidade());
+        assertThrows(UnsupportedOperationException.class, () -> ordem.getProdutos().clear());
+    }
+    @Test void consumoAcumuladoRetornaSomenteDiferencaENaoPermiteReducao() {
+        var produto = UUID.randomUUID();
+        var ordem = OrdemServico.abrir(UUID.randomUUID(), "Teste", List.of(),
+                List.of(new ItemProdutoOrdemServico(produto, 4)), agora);
+        assertThrows(RegraOrdemServicoException.class, () -> ordem.registrarConsumo(produto, 1));
+        ordem.iniciarDiagnostico();
+        ordem.registrarDiagnostico("Trocar", null, null);
+        ordem.enviarParaAprovacao(UUID.randomUUID(), BigDecimal.TEN);
+        ordem.aprovar(UUID.randomUUID());
+        ordem.iniciarExecucao();
+        assertEquals(2, ordem.registrarConsumo(produto, 2));
+        assertEquals(0, ordem.registrarConsumo(produto, 2));
+        assertThrows(RegraOrdemServicoException.class, () -> ordem.registrarConsumo(produto, 1));
+        assertThrows(RegraOrdemServicoException.class, () -> ordem.registrarConsumo(produto, 5));
+        assertEquals(1, ordem.registrarConsumo(produto, 3));
+        assertEquals(3, ordem.getProdutos().getFirst().quantidadeConsumida());
+        ordem.concluirExecucao(agora);
+        assertThrows(RegraOrdemServicoException.class, () -> ordem.registrarConsumo(produto, 4));
+        assertEquals(3, ordem.getProdutos().getFirst().quantidadeConsumida());
+    }
+
+    @Test void itemNaoAceitaConsumoNegativoOuMaiorQueQuantidadePrevista() {
+        assertThrows(DadosOrdemInvalidosException.class, () -> new ItemProdutoOrdemServico(UUID.randomUUID(), 2, -1));
+        assertThrows(DadosOrdemInvalidosException.class, () -> new ItemProdutoOrdemServico(UUID.randomUUID(), 2, 3));
     }
 }

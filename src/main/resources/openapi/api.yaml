@@ -477,11 +477,13 @@ paths:
     post:
       tags: [ordemServicoV1]
       operationId: iniciarDiagnosticoOrdemServicoV1
+      summary: Inicia o diagnóstico da ordem de serviço
+      description: Inicia o diagnóstico de uma ordem de serviço recebida, alterando seu status de RECEBIDA para EM_DIAGNOSTICO.
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       responses:
         '200':
-          description: Operação registrada
+          description: Diagnóstico iniciado
           content:
             application/json:
               schema:
@@ -498,6 +500,8 @@ paths:
     patch:
       tags: [ordemServicoV1]
       operationId: registrarDiagnosticoOrdemServicoV1
+      summary: Registra o diagnóstico da ordem de serviço
+      description: Registra o diagnóstico e permite atualizar os serviços e produtos com suas quantidades enquanto a OS está EM_DIAGNOSTICO. Listas omitidas preservam os itens atuais; listas vazias removem os itens correspondentes.
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       requestBody:
@@ -508,7 +512,7 @@ paths:
               $ref: '#/components/schemas/DiagnosticoOrdemServicoDTOV1'
       responses:
         '200':
-          description: Operação registrada
+          description: Diagnóstico registrado
           content:
             application/json:
               schema:
@@ -525,6 +529,8 @@ paths:
     post:
       tags: [ordemServicoV1]
       operationId: enviarOrcamentoOrdemServicoV1
+      summary: Encaminha o orçamento da ordem de serviço para aprovação
+      description: Vincula um orçamento existente à ordem de serviço diagnosticada, registra seu valor total e altera o status para AGUARDANDO_APROVACAO. A comunicação com o solicitante ocorre pelo sistema externo.
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       requestBody:
@@ -535,7 +541,7 @@ paths:
               $ref: '#/components/schemas/EnvioOrcamentoDTOV1'
       responses:
         '200':
-          description: Operação registrada
+          description: Orçamento vinculado e ordem de serviço aguardando aprovação
           content:
             application/json:
               schema:
@@ -552,6 +558,8 @@ paths:
     post:
       tags: [ordemServicoV1]
       operationId: aprovarOrdemServicoV1
+      summary: Aprova o orçamento da ordem de serviço
+      description: Registra a aprovação pelo atendente e vincula um cliente existente ou cadastra/localiza o cliente pelos dados informados. Não movimenta o estoque nem inicia a execução automaticamente.
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       requestBody:
@@ -562,7 +570,7 @@ paths:
               $ref: '#/components/schemas/AprovacaoOrdemServicoDTOV1'
       responses:
         '200':
-          description: Operação registrada
+          description: Ordem de serviço aprovada
           content:
             application/json:
               schema:
@@ -575,10 +583,13 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           description: Operação incompatível com o estado ou conflito de dados
+
   /v1/ordem-servico/{id}/recusa:
     post:
       tags: [ordemServicoV1]
       operationId: recusarOrdemServicoV1
+      summary: Recusa o orçamento da ordem de serviço
+      description: Registra o motivo da recusa enquanto a OS aguarda aprovação e ainda não foi aprovada, encerrando-a como RECUSADA sem exigir cadastro de cliente.
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       requestBody:
@@ -589,7 +600,7 @@ paths:
               $ref: '#/components/schemas/MotivoOrdemServicoDTOV1'
       responses:
         '200':
-          description: Operação registrada
+          description: Ordem de serviço recusada
           content:
             application/json:
               schema:
@@ -606,11 +617,13 @@ paths:
     post:
       tags: [ordemServicoV1]
       operationId: iniciarExecucaoOrdemServicoV1
+      summary: Inicia a execução da ordem de serviço
+      description: Inicia a execução de uma OS aprovada e com cliente vinculado, alterando o status para EM_EXECUCAO. O estoque é descontado ao registrar o consumo de cada produto.
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       responses:
         '200':
-          description: Operação registrada
+          description: Execução da ordem de serviço iniciada
           content:
             application/json:
               schema:
@@ -623,15 +636,64 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           description: Operação incompatível com o estado ou conflito de dados
+  /v1/ordem-servico/{id}/produtos/{produtoId}/consumo:
+    put:
+      tags: [ordemServicoV1]
+      operationId: registrarConsumoProdutoOrdemServicoV1
+      summary: Registra o consumo de um produto na ordem de serviço
+      description: >-
+        Registra o total acumulado utilizado de uma peça ou insumo durante a execução da OS
+        e desconta imediatamente apenas a diferença em relação ao total já registrado.
+        Repetir o mesmo total não gera nova baixa. O total não pode diminuir nem ultrapassar
+        a quantidade prevista na OS. Não é permitido registrar consumo após concluir a execução.
+      parameters:
+        - $ref: '#/components/parameters/OrdemServicoId'
+        - name: produtoId
+          in: path
+          required: true
+          description: ID do produto associado à ordem de serviço
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsumoProdutoDTOV1'
+      responses:
+        '200':
+          description: Consumo registrado e estoque atualizado pela diferença consumida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponseDTOV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Token ausente ou inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Estado da OS ou total de consumo incompatível com a operação
+        '422':
+          description: Estoque insuficiente; o consumo e a baixa são revertidos
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblemDetail'
+
   /v1/ordem-servico/{id}/execucao/conclusao:
     post:
       tags: [ordemServicoV1]
       operationId: concluirExecucaoOrdemServicoV1
+      summary: Conclui a execução da ordem de serviço
+      description: Registra a data de conclusão da execução. Não movimenta o estoque, pois as baixas são feitas ao registrar o consumo dos produtos durante a execução. A OS permanece EM_EXECUCAO até a finalização pelo atendente.
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       responses:
         '200':
-          description: Operação registrada
+          description: Execução concluída
           content:
             application/json:
               schema:
@@ -648,11 +710,13 @@ paths:
     post:
       tags: [ordemServicoV1]
       operationId: finalizarOrdemServicoV1
+      summary: Finaliza a ordem de serviço
+      description: Finaliza uma OS após a conclusão da execução, registra a data de fechamento e altera o status para FINALIZADA. A entrega do veículo é registrada em uma operação separada.
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       responses:
         '200':
-          description: Operação registrada
+          description: Ordem de serviço finalizada
           content:
             application/json:
               schema:
@@ -669,11 +733,13 @@ paths:
     post:
       tags: [ordemServicoV1]
       operationId: entregarOrdemServicoV1
+      summary: Registra a entrega do veículo da ordem de serviço
+      description: Registra a entrega do veículo de uma OS já finalizada e altera seu status de FINALIZADA para ENTREGUE.
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       responses:
         '200':
-          description: Operação registrada
+          description: Entrega do veículo registrada
           content:
             application/json:
               schema:
@@ -690,6 +756,8 @@ paths:
     post:
       tags: [ordemServicoV1]
       operationId: cancelarOrdemServicoV1
+      summary: Cancela a ordem de serviço
+      description: Cancela uma OS antes do início da execução, registra o motivo e a data de fechamento e altera o status para CANCELADA, preservando os dados da ordem de serviço. Não movimenta o estoque.
       parameters:
         - $ref: '#/components/parameters/OrdemServicoId'
       requestBody:
@@ -700,7 +768,7 @@ paths:
               $ref: '#/components/schemas/MotivoOrdemServicoDTOV1'
       responses:
         '200':
-          description: Operação registrada
+          description: Ordem de serviço cancelada
           content:
             application/json:
               schema:
@@ -720,7 +788,7 @@ paths:
         - estoqueV1
       operationId: movimentarEstoqueV1
       summary: Movimenta o estoque de um produto
-      description: Aumenta (ENTRADA) ou diminui (SAIDA) o estoque de uma peça ou insumo de forma atômica
+      description: Aumenta (ENTRADA) ou diminui (SAIDA) o estoque físico de forma atômica, impedindo saldo negativo
       parameters:
         - $ref: '#/components/parameters/ProdutoId'
       requestBody:
@@ -843,6 +911,31 @@ components:
       schema:
         type: string
   schemas:
+    ConsumoProdutoDTOV1:
+      type: object
+      required: [quantidadeConsumida]
+      properties:
+        quantidadeConsumida:
+          type: integer
+          minimum: 1
+          description: Total acumulado já utilizado deste produto na OS, não a quantidade adicional
+          example: 2
+    ItemProdutoOrdemServicoDTOV1:
+      type: object
+      required: [produtoId, quantidade]
+      properties:
+        produtoId:
+          type: string
+          format: uuid
+        quantidade:
+          type: integer
+          minimum: 1
+          description: Quantidade inteira de peças ou insumos prevista para a OS
+        quantidadeConsumida:
+          type: integer
+          minimum: 0
+          readOnly: true
+          description: Quantidade acumulada efetivamente utilizada e já descontada do estoque
     DiagnosticoOrdemServicoDTOV1:
       type: object
       required: [diagnostico]
@@ -854,14 +947,17 @@ components:
           pattern: '.*\S.*'
         servicoIds:
           type: array
+          nullable: true
+          description: Quando omitido, preserva os serviços atuais; lista vazia remove todos.
           items:
             type: string
             format: uuid
-        produtoIds:
+        produtos:
           type: array
+          nullable: true
+          description: Quando omitido, preserva os produtos e quantidades atuais; lista vazia remove todos.
           items:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/ItemProdutoOrdemServicoDTOV1'
     EnvioOrcamentoDTOV1:
       type: object
       required: [orcamentoId]
@@ -888,6 +984,7 @@ components:
         cpf:
           type: string
           pattern: '^[0-9]{11}$'
+          description: CPF com 11 dígitos e dígitos verificadores válidos
         celular:
           type: string
           maxLength: 20
@@ -932,7 +1029,7 @@ components:
         cpf:
           type: string
           pattern: '^[0-9]{11}$'
-          description: CPF do cliente (11 dígitos)
+          description: CPF do cliente com 11 dígitos e dígitos verificadores válidos
     ClienteResponseDTOV1:
       type: object
       required:
@@ -1154,18 +1251,17 @@ components:
           items:
             type: string
             format: uuid
-        produtoIds:
+        produtos:
           type: array
           items:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/ItemProdutoOrdemServicoDTOV1'
     OrdemServicoResponseDTOV1:
       type: object
       required:
         - id
         - veiculoId
         - servicoIds
-        - produtoIds
+        - produtos
         - dataAbertura
         - status
         - valorTotal
@@ -1192,12 +1288,11 @@ components:
             type: string
             format: uuid
           description: IDs dos serviços associados
-        produtoIds:
+        produtos:
           type: array
           items:
-            type: string
-            format: uuid
-          description: IDs das peças ou insumos associados
+            $ref: '#/components/schemas/ItemProdutoOrdemServicoDTOV1'
+          description: Peças e insumos associados, com as quantidades solicitadas
         dataAbertura:
           type: string
           format: date-time

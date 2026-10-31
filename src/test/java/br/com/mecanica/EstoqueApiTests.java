@@ -5,16 +5,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -27,14 +23,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 // UPDATE ... RETURNING e especifico do Postgres (o H2 nao suporta), entao este teste usa o banco real
 @SpringBootTest
-@Testcontainers
 @AutoConfigureMockMvc
 @Import(JwtMockMvcTestConfig.class)
 @ActiveProfiles("test")
-class EstoqueApiTests {
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
+class EstoqueApiTests extends PostgresApiTest {
 
     @Autowired MockMvc mvc;
     @Autowired JdbcTemplate jdbc;

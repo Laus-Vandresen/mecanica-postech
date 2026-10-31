@@ -249,6 +249,18 @@ class FluxoOrdemServicoApiTests {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
     }
 
+    @Test void aprovacaoRejeitaCpfInvalidoComMesmaRegraDoCadastro() throws Exception {
+        var os = aguardar();
+        for (var cpf : new String[]{"52998224724", "11111111111"}) {
+            enviar(json(post("/v1/ordem-servico/" + os + "/aprovacao"),
+                    "{\"cliente\":{\"nome\":\"Ana\",\"cpf\":\"" + cpf + "\"}}"))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.detail").value("CPF invalido"));
+        }
+        assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM cliente", Integer.class));
+        enviar(get("/v1/ordem-servico/" + os)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.orcamentoAprovado").value(false)).andExpect(jsonPath("$.clienteId").isEmpty());
+    }
+
     @Test void aprovacaoRepetidaNaoDuplicaCliente() throws Exception {
         var os = aguardar(); aprovar(os);
         enviar(json(post("/v1/ordem-servico/" + os + "/aprovacao"), "{}" )).andExpect(status().isConflict());

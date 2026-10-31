@@ -1,6 +1,9 @@
 package br.com.mecanica.repository;
 
 import br.com.mecanica.entity.OrdemServicoEntity;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,6 +33,10 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServicoEntity
             @Param("status") String status,
             @Param("fila") String fila,
             Pageable paginacao);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT ordem FROM OrdemServicoEntity ordem WHERE ordem.id = :id")
+    Optional<OrdemServicoEntity> buscarParaAlterar(@Param("id") UUID id);
 
     List<OrdemServicoEntity> findAllByDataFechamentoIsNotNull();
 }

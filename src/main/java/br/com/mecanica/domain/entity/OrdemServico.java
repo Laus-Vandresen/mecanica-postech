@@ -12,7 +12,7 @@ public final class OrdemServico {
     private final UUID veiculoId;
     private UUID orcamentoId;
     private List<UUID> servicoIds;
-    private List<UUID> produtoIds;
+    private List<ItemProdutoOrdemServico> produtos;
     private final LocalDateTime dataAbertura;
     private LocalDateTime dataFechamento;
     private StatusOrdemServico status;
@@ -26,7 +26,7 @@ public final class OrdemServico {
     private OrdemServico(EstadoOrdemServico estado) {
         id = Objects.requireNonNull(estado.id()); clienteId = estado.clienteId();
         veiculoId = Objects.requireNonNull(estado.veiculoId()); orcamentoId = estado.orcamentoId();
-        servicoIds = itens(estado.servicoIds()); produtoIds = itens(estado.produtoIds());
+        servicoIds = itens(estado.servicoIds()); produtos = produtos(estado.produtos());
         dataAbertura = Objects.requireNonNull(estado.dataAbertura()); dataFechamento = estado.dataFechamento();
         status = Objects.requireNonNull(estado.status()); descricao = estado.descricao(); diagnostico = estado.diagnostico();
         valorTotal = Objects.requireNonNull(estado.valorTotal()); motivoEncerramento = estado.motivoEncerramento();
@@ -35,7 +35,7 @@ public final class OrdemServico {
     }
 
     public static OrdemServico abrir(UUID veiculoId, String descricao, List<UUID> servicos,
-            List<UUID> produtos, LocalDateTime agora) {
+            List<ItemProdutoOrdemServico> produtos, LocalDateTime agora) {
         if (veiculoId == null) throw new DadosOrdemInvalidosException("Veiculo obrigatorio");
         var ordem = new OrdemServico(new EstadoOrdemServico(UUID.randomUUID(), null, veiculoId, null,
                 servicos, produtos, agora, null, StatusOrdemServico.RECEBIDA,
@@ -50,12 +50,12 @@ public final class OrdemServico {
         status = StatusOrdemServico.EM_DIAGNOSTICO;
     }
 
-    public void registrarDiagnostico(String texto, List<UUID> servicos, List<UUID> produtos) {
+    public void registrarDiagnostico(String texto, List<UUID> servicos, List<ItemProdutoOrdemServico> produtos) {
         exigir(StatusOrdemServico.EM_DIAGNOSTICO);
         String novoDiagnostico = texto(texto, 1000, "Diagnostico");
         var novosServicos = servicos == null ? servicoIds : itens(servicos);
-        var novosProdutos = produtos == null ? produtoIds : itens(produtos);
-        diagnostico = novoDiagnostico; servicoIds = novosServicos; produtoIds = novosProdutos;
+        var novosProdutos = produtos == null ? this.produtos : produtos(produtos);
+        diagnostico = novoDiagnostico; servicoIds = novosServicos; this.produtos = novosProdutos;
     }
 
     public void enviarParaAprovacao(UUID orcamento, BigDecimal total) {
@@ -87,6 +87,25 @@ public final class OrdemServico {
         if (!orcamentoAprovado || clienteId == null)
             throw new RegraOrdemServicoException("Execucao exige aprovacao e cliente vinculado");
         status = StatusOrdemServico.EM_EXECUCAO;
+    }
+
+    public int registrarConsumo(UUID produtoId, int quantidadeConsumida) {
+        exigir(StatusOrdemServico.EM_EXECUCAO);
+        if (dataConclusaoExecucao != null) {
+            throw new RegraOrdemServicoException("Nao e permitido registrar consumo apos concluir a execucao");
+        }
+        if (quantidadeConsumida <= 0) {
+            throw new DadosOrdemInvalidosException("Quantidade consumida deve ser positiva");
+        }
+        var item = produtos.stream().filter(produto -> produto.produtoId().equals(produtoId)).findFirst()
+                .orElseThrow(() -> new DadosOrdemInvalidosException("Produto nao associado a OS"));
+        if (quantidadeConsumida < item.quantidadeConsumida() || quantidadeConsumida > item.quantidade()) {
+            throw new RegraOrdemServicoException("O total consumido nao pode diminuir nem exceder a quantidade da OS");
+        }
+        int diferenca = quantidadeConsumida - item.quantidadeConsumida();
+        var atualizado = new ItemProdutoOrdemServico(produtoId, item.quantidade(), quantidadeConsumida);
+        produtos = produtos.stream().map(produto -> produto.produtoId().equals(produtoId) ? atualizado : produto).toList();
+        return diferenca;
     }
 
     public void concluirExecucao(LocalDateTime agora) {
@@ -135,13 +154,21 @@ public final class OrdemServico {
             throw new DadosOrdemInvalidosException("Itens nulos ou repetidos");
         return List.copyOf(valores);
     }
+    private static List<ItemProdutoOrdemServico> produtos(List<ItemProdutoOrdemServico> valores) {
+        if (valores == null) return List.of();
+        if (valores.stream().anyMatch(Objects::isNull)
+                || valores.stream().map(ItemProdutoOrdemServico::produtoId).distinct().count() != valores.size()) {
+            throw new DadosOrdemInvalidosException("Produtos nulos ou repetidos");
+        }
+        return List.copyOf(valores);
+    }
     private static String texto(String valor, int maximo, String campo) {
         if (valor == null || valor.isBlank() || valor.strip().length() > maximo)
             throw new DadosOrdemInvalidosException(campo + " obrigatorio, limite " + maximo);
         return valor.strip();
     }
     public EstadoOrdemServico estado() {
-        return new EstadoOrdemServico(id, clienteId, veiculoId, orcamentoId, servicoIds, produtoIds,
+        return new EstadoOrdemServico(id, clienteId, veiculoId, orcamentoId, servicoIds, produtos,
                 dataAbertura, dataFechamento, status, descricao, diagnostico, valorTotal, motivoEncerramento, orcamentoAprovado, dataConclusaoExecucao);
     }
 
@@ -150,7 +177,8 @@ public final class OrdemServico {
     public UUID getVeiculoId() { return veiculoId; }
     public UUID getOrcamentoId() { return orcamentoId; }
     public List<UUID> getServicoIds() { return servicoIds; }
-    public List<UUID> getProdutoIds() { return produtoIds; }
+    public List<UUID> getProdutoIds() { return produtos.stream().map(ItemProdutoOrdemServico::produtoId).toList(); }
+    public List<ItemProdutoOrdemServico> getProdutos() { return produtos; }
     public LocalDateTime getDataAbertura() { return dataAbertura; }
     public LocalDateTime getDataFechamento() { return dataFechamento; }
     public StatusOrdemServico getStatus() { return status; }

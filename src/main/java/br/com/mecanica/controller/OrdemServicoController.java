@@ -3,6 +3,7 @@ package br.com.mecanica.controller;
 import br.com.mecanica.api.OrdemServicoV1Api;
 import br.com.mecanica.api.dto.AprovacaoOrdemServicoDTOV1;
 import br.com.mecanica.api.dto.DiagnosticoOrdemServicoDTOV1;
+import br.com.mecanica.api.dto.ConsumoProdutoDTOV1;
 import br.com.mecanica.api.dto.EnvioOrcamentoDTOV1;
 import br.com.mecanica.api.dto.MotivoOrdemServicoDTOV1;
 import br.com.mecanica.api.dto.OrdemServicoRequestDTOV1;
@@ -28,7 +29,7 @@ public class OrdemServicoController implements OrdemServicoV1Api {
     public ResponseEntity<OrdemServicoResponseDTOV1> cadastrarOrdemServicoV1(OrdemServicoRequestDTOV1 request) {
         var response = OrdemServicoMapper.toResponse(service.criar(
                 request.getVeiculoId(), request.getDescricao(), request.getServicoIds(),
-                request.getProdutoIds()));
+                OrdemServicoMapper.toProdutos(request.getProdutos())));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -54,7 +55,7 @@ public class OrdemServicoController implements OrdemServicoV1Api {
     public ResponseEntity<OrdemServicoResponseDTOV1> registrarDiagnosticoOrdemServicoV1(
             UUID id, DiagnosticoOrdemServicoDTOV1 request) {
         return ResponseEntity.ok(OrdemServicoMapper.toResponse(service.diagnosticar(
-                id, request.getDiagnostico(), request.getServicoIds(), request.getProdutoIds())));
+                id, request.getDiagnostico(), request.getServicoIds(), OrdemServicoMapper.toProdutos(request.getProdutos()))));
     }
 
     @Override
@@ -81,6 +82,13 @@ public class OrdemServicoController implements OrdemServicoV1Api {
     @Override
     public ResponseEntity<OrdemServicoResponseDTOV1> iniciarExecucaoOrdemServicoV1(UUID id) {
         return ResponseEntity.ok(OrdemServicoMapper.toResponse(service.iniciarExecucao(id)));
+    }
+
+    @Override
+    public ResponseEntity<OrdemServicoResponseDTOV1> registrarConsumoProdutoOrdemServicoV1(
+            UUID id, UUID produtoId, ConsumoProdutoDTOV1 request) {
+        return ResponseEntity.ok(OrdemServicoMapper.toResponse(
+                service.registrarConsumo(id, produtoId, request.getQuantidadeConsumida())));
     }
 
     @Override

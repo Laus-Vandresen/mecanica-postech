@@ -13,7 +13,7 @@ class SimplificacaoOsMigrationTest {
         Flyway.configure().dataSource(url, "sa", "").target("13").load().migrate();
         var veiculo = UUID.randomUUID();
         var os = UUID.randomUUID();
-        var flyway = Flyway.configure().dataSource(url, "sa", "").load();
+        var flyway = Flyway.configure().dataSource(url, "sa", "").target("14").load();
         assertEquals(1, flyway.migrate().migrationsExecuted);
         try (var connection = DriverManager.getConnection(url, "sa", "")) {
             try (var statement = connection.prepareStatement("INSERT INTO veiculo(id,placa,modelo) VALUES(?,'ABC1D23','Modelo')")) {

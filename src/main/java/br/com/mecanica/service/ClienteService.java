@@ -3,6 +3,7 @@ package br.com.mecanica.service;
 import java.util.UUID;
 import br.com.mecanica.entity.mapper.ClienteEntityMapper;
 import br.com.mecanica.domain.entity.Cliente;
+import br.com.mecanica.domain.valueObject.Cpf;
 import br.com.mecanica.entity.ClienteEntity;
 import br.com.mecanica.repository.*;
 import br.com.mecanica.exception.RecursoNaoEncontradoException;
@@ -28,13 +29,18 @@ public class ClienteService {
 
     @Transactional
     public Cliente criar(Cliente cliente) {
-        return ClienteEntityMapper.toDomain(repository.saveAndFlush(ClienteEntityMapper.toEntity(cliente)));
+        var cpf = new Cpf(cliente.getCpf());
+        var entity = ClienteEntityMapper.toEntity(cliente);
+        entity.setCpf(cpf.valor());
+        return ClienteEntityMapper.toDomain(repository.saveAndFlush(entity));
     }
 
     @Transactional
     public Cliente atualizar(UUID id, Cliente cliente) {
         var entity = encontrar(id);
+        var cpf = new Cpf(cliente.getCpf());
         ClienteEntityMapper.updateEntity(cliente, entity);
+        entity.setCpf(cpf.valor());
         return ClienteEntityMapper.toDomain(repository.saveAndFlush(entity));
     }
 

@@ -6,9 +6,12 @@ import br.com.mecanica.domain.exception.RegraOrdemServicoException;
 import br.com.mecanica.domain.service.OrdemServicoDomainService;
 import br.com.mecanica.domain.valueObject.DadosClienteAprovacao;
 import br.com.mecanica.domain.valueObject.FilaOrdemServico;
+import br.com.mecanica.domain.valueObject.ItemProdutoOrdemServico;
+import br.com.mecanica.domain.valueObject.OperacaoEstoque;
 import br.com.mecanica.domain.valueObject.StatusOrdemServico;
 import br.com.mecanica.domain.valueObject.TempoMedioFinalizacao;
 import br.com.mecanica.entity.ClienteEntity;
+import br.com.mecanica.entity.ItemProdutoOrdemServicoEntity;
 import br.com.mecanica.entity.OrdemServicoEntity;
 import br.com.mecanica.entity.mapper.OrdemServicoEntityMapper;
 import br.com.mecanica.exception.RecursoNaoEncontradoException;
@@ -44,6 +47,7 @@ public class OrdemServicoService {
     private final ServicoRepository servicoRepository;
     private final ProdutoRepository produtoRepository;
     private final OrcamentoRepository orcamentoRepository;
+    private final EstoqueService estoqueService;
     private final OrdemServicoDomainService domainService;
     private final Clock clock;
 
@@ -72,7 +76,7 @@ public class OrdemServicoService {
     }
 
     @Transactional
-    public OrdemServico criar(UUID veiculo, String descricao, List<UUID> servicos, List<UUID> produtos) {
+    public OrdemServico criar(UUID veiculo, String descricao, List<UUID> servicos, List<ItemProdutoOrdemServico> produtos) {
         var ordem = OrdemServico.abrir(veiculo, descricao, servicos, produtos, agora());
         if (!veiculoRepository.existsById(veiculo)) {
             throw new RecursoNaoEncontradoException("Veiculo nao encontrado");
@@ -87,7 +91,7 @@ public class OrdemServicoService {
     }
 
     @Transactional
-    public OrdemServico diagnosticar(UUID id, String diagnostico, List<UUID> servicos, List<UUID> produtos) {
+    public OrdemServico diagnosticar(UUID id, String diagnostico, List<UUID> servicos, List<ItemProdutoOrdemServico> produtos) {
         return alterar(id, ordem -> {
             ordem.registrarDiagnostico(diagnostico, servicos, produtos);
             validarItens(ordem.getServicoIds(), ordem.getProdutoIds());
@@ -109,7 +113,6 @@ public class OrdemServicoService {
             var clienteId = resolverCliente(cliente, dados);
             ordem.aprovar(clienteId);
             vincularVeiculo(ordem.getVeiculoId(), clienteId);
-            // TODO integrar a reserva de pecas e insumos na aprovacao com o modulo de estoque.
         });
     }
 
@@ -120,18 +123,22 @@ public class OrdemServicoService {
 
     @Transactional
     public OrdemServico iniciarExecucao(UUID id) {
+        return alterar(id, OrdemServico::iniciarExecucao);
+    }
+
+    @Transactional
+    public OrdemServico registrarConsumo(UUID id, UUID produtoId, int quantidadeConsumida) {
         return alterar(id, ordem -> {
-            ordem.iniciarExecucao();
-            // TODO consultar a reserva efetiva no modulo de estoque antes da execucao.
+            int quantidadeBaixar = ordem.registrarConsumo(produtoId, quantidadeConsumida);
+            if (quantidadeBaixar > 0) {
+                estoqueService.movimentar(produtoId, OperacaoEstoque.SAIDA, quantidadeBaixar);
+            }
         });
     }
 
     @Transactional
     public OrdemServico concluirExecucao(UUID id) {
-        return alterar(id, ordem -> {
-            ordem.concluirExecucao(agora());
-            // TODO integrar o registro de consumo com o modulo de estoque.
-        });
+        return alterar(id, ordem -> ordem.concluirExecucao(agora()));
     }
 
     @Transactional
@@ -146,10 +153,7 @@ public class OrdemServicoService {
 
     @Transactional
     public OrdemServico cancelar(UUID id, String motivo) {
-        return alterar(id, ordem -> {
-            ordem.cancelar(motivo, agora());
-            // TODO liberar somente reservas nao consumidas no modulo de estoque.
-        });
+        return alterar(id, ordem -> ordem.cancelar(motivo, agora()));
     }
 
     private OrdemServicoEntity encontrar(UUID id) {
@@ -158,7 +162,8 @@ public class OrdemServicoService {
     }
 
     private OrdemServico alterar(UUID id, Consumer<OrdemServico> operacao) {
-        var entity = encontrar(id);
+        var entity = repository.buscarParaAlterar(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Ordem de servico nao encontrada"));
         var ordem = OrdemServicoEntityMapper.toDomain(entity);
         operacao.accept(ordem);
         return salvar(ordem, entity);
@@ -173,8 +178,13 @@ public class OrdemServicoService {
                 : orcamentoRepository.getReferenceById(ordem.getOrcamentoId()));
         entity.setServicos(new ArrayList<>(ordem.getServicoIds().stream()
                 .map(servicoRepository::getReferenceById).toList()));
-        entity.setProdutos(new ArrayList<>(ordem.getProdutoIds().stream()
-                .map(produtoRepository::getReferenceById).toList()));
+        entity.setProdutos(new ArrayList<>(ordem.getProdutos().stream().map(item -> {
+            var produto = new ItemProdutoOrdemServicoEntity();
+            produto.setProduto(produtoRepository.getReferenceById(item.produtoId()));
+            produto.setQuantidade(item.quantidade());
+            produto.setQuantidadeConsumida(item.quantidadeConsumida());
+            return produto;
+        }).toList()));
         return OrdemServicoEntityMapper.toDomain(repository.saveAndFlush(entity));
     }
 

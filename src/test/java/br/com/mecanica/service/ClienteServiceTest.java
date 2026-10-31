@@ -3,6 +3,7 @@ package br.com.mecanica.service;
 import java.util.UUID;
 import br.com.mecanica.entity.mapper.ClienteEntityMapper;
 import br.com.mecanica.domain.entity.Cliente;
+import br.com.mecanica.domain.exception.CpfInvalidoException;
 import br.com.mecanica.entity.ClienteEntity;
 import br.com.mecanica.exception.RecursoNaoEncontradoException;
 import br.com.mecanica.repository.ClienteRepository;
@@ -115,6 +116,26 @@ class ClienteServiceTest {
         var conflito = new DataIntegrityViolationException("Vinculo existente");
         doThrow(conflito).when(repository).flush();
         assertSame(conflito, assertThrows(DataIntegrityViolationException.class, () -> service.excluir(uuid(1))));
+    }
+
+    @Test
+    void criacaoComCpfInvalidoNaoPersisteCliente() {
+        var cliente = dados(false);
+        cliente.setCpf("52998224724");
+        assertThrows(CpfInvalidoException.class, () -> service.criar(cliente));
+        verifyNoInteractions(repository);
+    }
+
+    @Test
+    void atualizacaoComCpfInvalidoPreservaCadastroAnterior() {
+        var anterior = entidade(uuid(1), dados(false));
+        var cliente = dados(true);
+        cliente.setCpf("11111111111");
+        when(repository.findById(uuid(1))).thenReturn(Optional.of(anterior));
+        assertThrows(CpfInvalidoException.class, () -> service.atualizar(uuid(1), cliente));
+        assertEquals("52998224725", anterior.getCpf());
+        assertEquals("Ana", anterior.getNome());
+        verify(repository, never()).saveAndFlush(any());
     }
 
     private Cliente dados(boolean atualizado) {

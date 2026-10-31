@@ -2,6 +2,8 @@ package br.com.mecanica.entity;
 
 import java.util.UUID;
 import jakarta.persistence.Column;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 
 
@@ -45,8 +47,9 @@ public class OrdemServicoEntity {
     @ManyToMany
     private List<ServicoEntity> servicos;
 
-    @ManyToMany
-    private List<ProdutoEntity> produtos;
+    @ElementCollection
+    @CollectionTable(name = "ordem_servico_produtos", joinColumns = @JoinColumn(name = "ordem_servico_entity_id"))
+    private List<ItemProdutoOrdemServicoEntity> produtos;
 
     @Column(nullable = false)
     private LocalDateTime dataAbertura;

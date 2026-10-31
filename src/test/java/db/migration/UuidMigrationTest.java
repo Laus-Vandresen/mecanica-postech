@@ -29,10 +29,12 @@ class UuidMigrationTest {
             statement.executeUpdate("INSERT INTO ordem_servico_produtos VALUES(401,201),(401,202)");
         }
         var flyway = Flyway.configure().dataSource(url, "sa", "").load();
-        assertEquals(2, flyway.migrate().migrationsExecuted);
+        assertEquals(3, flyway.migrate().migrationsExecuted);
         try (var connection = DriverManager.getConnection(url, "sa", "")) {
             assertEquals(2, count(connection, "SELECT COUNT(*) FROM pessoa"));
             assertEquals(2, count(connection, "SELECT COUNT(*) FROM produto"));
+            assertEquals(2, count(connection, "SELECT COUNT(*) FROM ordem_servico_produtos WHERE quantidade_consumida=0"));
+            assertEquals(2, count(connection, "SELECT COUNT(*) FROM ordem_servico_produtos WHERE quantidade=1"));
             assertEquals(2, count(connection, "SELECT COUNT(*) FROM ordem_servico"));
             assertEquals(1, count(connection, "SELECT COUNT(*) FROM pessoa p JOIN cliente c ON p.id=c.id WHERE p.nome='Cliente legado' AND c.cpf='52998224725'"));
             assertEquals(1, count(connection, "SELECT COUNT(*) FROM pessoa p JOIN usuario u ON p.id=u.id WHERE u.login='usuario'"));

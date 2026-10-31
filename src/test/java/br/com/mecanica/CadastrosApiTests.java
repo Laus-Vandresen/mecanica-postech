@@ -130,6 +130,16 @@ class CadastrosApiTests {
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos.placa").exists());
     }
     @Test
+    void cadastroRejeitaCpfComOnzeDigitosMasInvalido() throws Exception {
+        for (var cpf : new String[]{"52998224724", "11111111111"}) {
+            var body = dados("clientes", false, null).replace("52998224725", cpf);
+            mvc.perform(post("/v1/clientes").contentType(MediaType.APPLICATION_JSON).content(body))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.detail").value("CPF invalido"));
+        }
+        mvc.perform(get("/v1/clientes")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
     void rejeitaReferenciaDeClienteSemFormatoUuid() throws Exception {
         var body = dados("veiculos", false, UUID.randomUUID())
                 .replaceFirst("[0-9a-f]{8}-[0-9a-f-]{27}", "123");

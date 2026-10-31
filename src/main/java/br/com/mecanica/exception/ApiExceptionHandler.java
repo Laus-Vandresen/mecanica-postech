@@ -1,6 +1,7 @@
 package br.com.mecanica.exception;
 
 import br.com.mecanica.api.dto.ErrorResponseDTOV1;
+import br.com.mecanica.domain.exception.CpfInvalidoException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -33,6 +34,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
     @ExceptionHandler(br.com.mecanica.domain.exception.DadosOrdemInvalidosException.class)
     public ProblemDetail dadosOs(br.com.mecanica.domain.exception.DadosOrdemInvalidosException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(CpfInvalidoException.class)
+    public ProblemDetail cpfInvalido(CpfInvalidoException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 

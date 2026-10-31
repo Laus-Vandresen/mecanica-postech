@@ -1,6 +1,8 @@
 package br.com.mecanica.controller.mapper;
 
 import br.com.mecanica.api.dto.ClienteAprovacaoDTOV1;
+import br.com.mecanica.api.dto.ItemProdutoOrdemServicoDTOV1;
+import br.com.mecanica.domain.valueObject.ItemProdutoOrdemServico;
 import br.com.mecanica.api.dto.OrdemServicoResponseDTOV1;
 import br.com.mecanica.api.dto.TempoMedioFinalizacaoResponseDTOV1;
 import br.com.mecanica.domain.entity.OrdemServico;
@@ -26,6 +28,18 @@ public final class OrdemServicoMapper {
         }
         return new DadosClienteAprovacao(
                 cliente.getNome(), cliente.getCpf(), cliente.getCelular(), cliente.getEmail());
+    }
+
+    public static List<ItemProdutoOrdemServico> toProdutos(List<ItemProdutoOrdemServicoDTOV1> produtos) {
+        if (produtos == null) {
+            return null;
+        }
+        return produtos.stream().map(item -> {
+            if (item == null || item.getQuantidade() == null) {
+                throw new DadosOrdemInvalidosException("Produto e quantidade positiva sao obrigatorios");
+            }
+            return new ItemProdutoOrdemServico(item.getProdutoId(), item.getQuantidade());
+        }).toList();
     }
 
     public static StatusOrdemServico toStatus(String status) {
@@ -57,7 +71,9 @@ public final class OrdemServicoMapper {
         response.setVeiculoId(ordem.getVeiculoId());
         response.setOrcamentoId(ordem.getOrcamentoId());
         response.setServicoIds(ordem.getServicoIds());
-        response.setProdutoIds(ordem.getProdutoIds());
+        response.setProdutos(ordem.getProdutos().stream()
+                .map(item -> new ItemProdutoOrdemServicoDTOV1(item.produtoId(), item.quantidade())
+                        .quantidadeConsumida(item.quantidadeConsumida())).toList());
         response.setDataAbertura(data(ordem.getDataAbertura()));
         response.setDataFechamento(data(ordem.getDataFechamento()));
         response.setStatus(ordem.getStatus().name());
