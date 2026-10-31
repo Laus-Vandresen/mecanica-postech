@@ -7,6 +7,7 @@ import br.com.mecanica.domain.service.OrdemServicoDomainService;
 import br.com.mecanica.domain.valueObject.DadosClienteAprovacao;
 import br.com.mecanica.domain.valueObject.EstadoOrdemServico;
 import br.com.mecanica.domain.valueObject.FilaOrdemServico;
+import br.com.mecanica.domain.valueObject.ItemProdutoOrdemServico;
 import br.com.mecanica.domain.valueObject.StatusOrdemServico;
 import br.com.mecanica.entity.ClienteEntity;
 import br.com.mecanica.entity.OrcamentoEntity;
@@ -60,6 +61,7 @@ class OrdemServicoServiceTest {
     @Mock private ProdutoRepository produtoRepository;
     @Mock private OrcamentoRepository orcamentoRepository;
     @Mock private OrdemServicoDomainService domainService;
+    @Mock private EstoqueService estoqueService;
 
     private OrdemServicoService service;
     private VeiculoEntity veiculoRef;
@@ -68,7 +70,7 @@ class OrdemServicoServiceTest {
     void setUp() {
         var clock = Clock.fixed(Instant.parse("2026-05-10T12:00:00Z"), ZoneOffset.UTC);
         service = new OrdemServicoService(repository, veiculoRepository, clienteRepository,
-                servicoRepository, produtoRepository, orcamentoRepository, domainService, clock);
+                servicoRepository, produtoRepository, orcamentoRepository, estoqueService, domainService, clock);
         veiculoRef = new VeiculoEntity();
         veiculoRef.setId(VEICULO_ID);
         lenient().when(veiculoRepository.getReferenceById(VEICULO_ID)).thenReturn(veiculoRef);
@@ -87,7 +89,7 @@ class OrdemServicoServiceTest {
             return salvo;
         });
 
-        var criada = service.criar(VEICULO_ID, "Ruído na suspensão", List.of(SERVICO_ID), List.of(PRODUTO_ID));
+        var criada = service.criar(VEICULO_ID, "Ruído na suspensão", List.of(SERVICO_ID), List.of(new ItemProdutoOrdemServico(PRODUTO_ID, 1)));
 
         assertEquals(OS_ID, criada.getId());
         assertEquals(AGORA, criada.getDataAbertura());
@@ -160,7 +162,7 @@ class OrdemServicoServiceTest {
         var cliente = cliente(CLIENTE_ID);
         var veiculo = new VeiculoEntity();
         veiculo.setId(VEICULO_ID);
-        when(repository.findById(OS_ID)).thenReturn(Optional.of(entity));
+        when(repository.buscarParaAlterar(OS_ID)).thenReturn(Optional.of(entity));
         when(orcamentoRepository.findById(ORCAMENTO_ID)).thenReturn(Optional.of(orcamento("50.00")));
         when(clienteRepository.findById(CLIENTE_ID)).thenReturn(Optional.of(cliente));
         when(veiculoRepository.buscarParaVincular(VEICULO_ID)).thenReturn(Optional.of(veiculo));
@@ -182,7 +184,7 @@ class OrdemServicoServiceTest {
         var veiculo = new VeiculoEntity();
         veiculo.setId(VEICULO_ID);
         var dados = new DadosClienteAprovacao(" Ana ", "52998224725", "11999999999", "ana@example.com");
-        when(repository.findById(OS_ID)).thenReturn(Optional.of(entity));
+        when(repository.buscarParaAlterar(OS_ID)).thenReturn(Optional.of(entity));
         when(orcamentoRepository.findById(ORCAMENTO_ID)).thenReturn(Optional.of(orcamento("50.00")));
         when(clienteRepository.findByCpf(dados.cpf())).thenReturn(Optional.empty());
         when(clienteRepository.saveAndFlush(any())).thenAnswer(invocation -> {
@@ -206,7 +208,7 @@ class OrdemServicoServiceTest {
 
     @Test
     void aprovarBloqueiaOrcamentoAlteradoAntesDeCriarOuVincularCliente() {
-        when(repository.findById(OS_ID)).thenReturn(Optional.of(ordemAguardandoAprovacao()));
+        when(repository.buscarParaAlterar(OS_ID)).thenReturn(Optional.of(ordemAguardandoAprovacao()));
         when(orcamentoRepository.findById(ORCAMENTO_ID)).thenReturn(Optional.of(orcamento("51.00")));
 
         assertThrows(RegraOrdemServicoException.class, () -> service.aprovar(OS_ID, CLIENTE_ID, null));
@@ -222,7 +224,7 @@ class OrdemServicoServiceTest {
         var veiculo = new VeiculoEntity();
         veiculo.setId(VEICULO_ID);
         veiculo.setCliente(outroCliente);
-        when(repository.findById(OS_ID)).thenReturn(Optional.of(entity));
+        when(repository.buscarParaAlterar(OS_ID)).thenReturn(Optional.of(entity));
         when(orcamentoRepository.findById(ORCAMENTO_ID)).thenReturn(Optional.of(orcamento("50.00")));
         when(clienteRepository.findById(CLIENTE_ID)).thenReturn(Optional.of(cliente(CLIENTE_ID)));
         when(veiculoRepository.buscarParaVincular(VEICULO_ID)).thenReturn(Optional.of(veiculo));
@@ -239,9 +241,9 @@ class OrdemServicoServiceTest {
         var orcamento = orcamento("50.00");
         orcamento.setId(ORCAMENTO_ID);
         var cliente = cliente(CLIENTE_ID);
-        when(repository.findById(OS_ID)).thenReturn(Optional.of(entity));
-        when(repository.findById(uuid(7))).thenReturn(Optional.of(ordemBase(StatusOrdemServico.RECEBIDA, AGORA.minusHours(1))));
-        when(repository.findById(uuid(8))).thenReturn(Optional.of(ordemAguardandoAprovacao()));
+        when(repository.buscarParaAlterar(OS_ID)).thenReturn(Optional.of(entity));
+        when(repository.buscarParaAlterar(uuid(7))).thenReturn(Optional.of(ordemBase(StatusOrdemServico.RECEBIDA, AGORA.minusHours(1))));
+        when(repository.buscarParaAlterar(uuid(8))).thenReturn(Optional.of(ordemAguardandoAprovacao()));
         when(repository.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(servicoRepository.findAllById(List.of())).thenReturn(List.of());
         when(produtoRepository.findAllById(List.of())).thenReturn(List.of());
@@ -268,7 +270,7 @@ class OrdemServicoServiceTest {
     @Test
     void enviarOrcamentoInexistenteNaoSalvaOrdem() {
         var entity = ordemEmDiagnostico();
-        when(repository.findById(OS_ID)).thenReturn(Optional.of(entity));
+        when(repository.buscarParaAlterar(OS_ID)).thenReturn(Optional.of(entity));
         when(orcamentoRepository.findById(ORCAMENTO_ID)).thenReturn(Optional.empty());
 
         assertThrows(RecursoNaoEncontradoException.class, () -> service.enviarOrcamento(OS_ID, ORCAMENTO_ID));
@@ -278,7 +280,7 @@ class OrdemServicoServiceTest {
 
     @Test
     void diagnosticoComItemAusenteNaoPersisteAlteracao() {
-        when(repository.findById(OS_ID)).thenReturn(Optional.of(ordemEmDiagnostico()));
+        when(repository.buscarParaAlterar(OS_ID)).thenReturn(Optional.of(ordemEmDiagnostico()));
         when(servicoRepository.findAllById(List.of(SERVICO_ID))).thenReturn(List.of());
 
         assertThrows(RecursoNaoEncontradoException.class,

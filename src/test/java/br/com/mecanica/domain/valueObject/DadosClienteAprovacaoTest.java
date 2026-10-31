@@ -1,6 +1,7 @@
 package br.com.mecanica.domain.valueObject;
 
 import br.com.mecanica.domain.exception.DadosOrdemInvalidosException;
+import br.com.mecanica.domain.exception.CpfInvalidoException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,15 +31,15 @@ class DadosClienteAprovacaoTest {
 
     @Test
     void exigeCpfComOnzeDigitosEValidacaoDosDigitosVerificadores() {
-        assertThrows(DadosOrdemInvalidosException.class,
+        assertThrows(CpfInvalidoException.class,
                 () -> new DadosClienteAprovacao("Ana", null, null, null));
-        assertThrows(DadosOrdemInvalidosException.class,
+        assertThrows(CpfInvalidoException.class,
                 () -> new DadosClienteAprovacao("Ana", "5299822472", null, null));
-        assertThrows(DadosOrdemInvalidosException.class,
+        assertThrows(CpfInvalidoException.class,
                 () -> new DadosClienteAprovacao("Ana", "5299822472A", null, null));
-        assertThrows(DadosOrdemInvalidosException.class,
+        assertThrows(CpfInvalidoException.class,
                 () -> new DadosClienteAprovacao("Ana", "11111111111", null, null));
-        assertThrows(DadosOrdemInvalidosException.class,
+        assertThrows(CpfInvalidoException.class,
                 () -> new DadosClienteAprovacao("Ana", "52998224724", null, null));
         assertDoesNotThrow(() -> new DadosClienteAprovacao("Ana", "52998224725", null, null));
     }

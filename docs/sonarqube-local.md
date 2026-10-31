@@ -21,6 +21,8 @@ Rode testes e análise na mesma chamada Maven:
 .\mvnw.cmd --batch-mode clean verify sonar:sonar -Dsonar.host.url=http://localhost:9000
 ```
 
+A fase `verify` gera o relatório JaCoCo em `target/site/jacoco/jacoco.xml`, importado pelo SonarQube. O código gerado pelo OpenAPI é excluído da cobertura. A regra existente de 80% por classe crítica precisa passar para o comando seguir até a análise SonarQube. Consulte [a documentação de cobertura](cobertura-testes.md).
+
 Os resultados, incluindo vulnerabilidades encontradas, ficam no painel do projeto
 em <http://localhost:9000>. Os dados do SonarQube persistem nos volumes Docker.
 Para pará-lo sem apagar os dados, execute `docker compose stop sonarqube`; para

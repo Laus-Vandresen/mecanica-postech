@@ -70,7 +70,7 @@ class OrdemServicoTest {
     }
     @Test void diagnosticoPreservaItensQuandoListasNaoSaoInformadas() {
         var servico = UUID.randomUUID(); var produto = UUID.randomUUID();
-        var ordem = OrdemServico.abrir(UUID.randomUUID(), "Barulho", List.of(servico), List.of(produto), agora);
+        var ordem = OrdemServico.abrir(UUID.randomUUID(), "Barulho", List.of(servico), List.of(new ItemProdutoOrdemServico(produto, 1)), agora);
         ordem.iniciarDiagnostico(); ordem.registrarDiagnostico("Verificado", null, null);
         assertEquals(List.of(servico), ordem.getServicoIds());
         assertEquals(List.of(produto), ordem.getProdutoIds());

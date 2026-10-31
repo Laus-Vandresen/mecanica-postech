@@ -17,10 +17,13 @@
 		<openapi-generator.version>7.26.0</openapi-generator.version>
 		<modelmapper.version>3.2.4</modelmapper.version>
 		<jacoco.version>0.8.16</jacoco.version>
+		<argLine></argLine>
 		<sonar-maven-plugin.version>5.8.0.7211</sonar-maven-plugin.version>
 		<sonar.java.jdkHome>${java.home}</sonar.java.jdkHome>
 		<sonar.projectKey>mecanica-postech</sonar.projectKey>
 		<sonar.projectName>Mecanica Postech</sonar.projectName>
+		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<sonar.coverage.exclusions>target/generated-sources/openapi/**</sonar.coverage.exclusions>
 	</properties>
 	<dependencies>
 		<!-- Spring Boot application starters -->
@@ -165,6 +168,11 @@
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+							<excludes>
+								<exclude>br/com/mecanica/api/**</exclude>
+							</excludes>
+						</configuration>
 					</execution>
 					<execution>
 						<id>check-critical-domain-coverage</id>

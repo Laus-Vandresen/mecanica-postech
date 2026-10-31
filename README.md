@@ -113,6 +113,10 @@ Os testes HTTP de `CadastrosApiTests` continuam cobrindo validações de entrada
 status HTTP e restrições reais no H2. Os mocks dos testes unitários não substituem
 esses testes de integração nem verificam transações do banco.
 
+## Cobertura de testes
+
+Execute `.\mvnw.cmd clean verify` para coletar a cobertura e gerar `target/site/jacoco/index.html` e `target/site/jacoco/jacoco.xml`. Os testes PostgreSQL exigem Docker ou um banco local exclusivo. As interfaces e DTOs gerados pelo OpenAPI ficam fora da medição. A verificação existente de 80% por classe crítica foi preservada. Veja [como gerar e interpretar a cobertura](docs/cobertura-testes.md).
+
 ## Análise local com SonarQube
 
 O SonarQube roda no Docker Compose. Suba o serviço com
